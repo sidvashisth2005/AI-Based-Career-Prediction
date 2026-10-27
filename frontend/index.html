@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Career Predictor</title>
+  <meta name="description" content="Predict suitable careers, find your skill gaps and practise mock interviews based on your resume.">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15.5 8.5l-2 5-5 2 2-5z" fill="currentColor"/></svg>
+      <span>AI Career Predictor</span>
+    </div>
+    <nav class="steps" role="tablist">
+      <button class="step active" data-view="profile" role="tab"><b>1</b> Profile</button>
+      <button class="step" data-view="matches" role="tab"><b>2</b> Career matches</button>
+      <button class="step" data-view="gap" role="tab"><b>3</b> Skill gap</button>
+      <button class="step" data-view="interview" role="tab"><b>4</b> Mock interview</button>
+    </nav>
+    <span id="engine-badge" class="badge muted" title="Interview engine">…</span>
+  </header>
+
+  <main>
+    <!-- 1. PROFILE -->
+    <section id="view-profile" class="view active">
+      <h1>Tell us about yourself</h1>
+      <p class="lead">Upload your resume and/or add skills manually. We'll predict the careers that suit you, show the gaps for any field, and run a mock interview tailored to your resume.</p>
+
+      <div class="grid two">
+        <div class="card">
+          <h2>Resume</h2>
+          <label id="dropzone" class="dropzone" for="resume-file">
+            <input id="resume-file" type="file" accept=".pdf,.docx,.txt" hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0l-4 4m4-4l4 4M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><b>Choose a file</b> or drag it here</span>
+            <small>PDF, DOCX or TXT · max 5 MB</small>
+          </label>
+          <details class="paste">
+            <summary>…or paste resume text</summary>
+            <textarea id="resume-text" rows="7" placeholder="Paste your resume here"></textarea>
+            <button id="parse-text" class="btn secondary">Analyse text</button>
+          </details>
+          <div id="resume-summary" class="resume-summary hidden"></div>
+        </div>
+
+        <div class="card">
+          <h2>Skills &amp; interests</h2>
+          <label class="field">Skills
+            <div class="chip-input" id="skill-box">
+              <div id="skill-chips" class="chips"></div>
+              <input id="skill-input" list="skill-list" placeholder="Type a skill and press Enter">
+              <datalist id="skill-list"></datalist>
+            </div>
+          </label>
+          <div class="field">Interests <small class="hint">(optional, improves predictions)</small>
+            <div id="interest-chips" class="chips toggles"></div>
+          </div>
+          <div class="row">
+            <label class="field">Experience (years)
+              <input id="experience" type="number" min="0" max="50" step="0.5" value="0">
+            </label>
+            <label class="field">Education
+              <select id="education">
+                <option value="">Select</option>
+                <option>Higher Secondary</option><option>Diploma</option><option>Bachelors</option><option>Masters</option><option>PhD</option>
+              </select>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="predict-btn" class="btn primary large">Predict my career</button>
+        <span id="profile-msg" class="msg"></span>
+      </div>
+    </section>
+
+    <!-- 2. MATCHES -->
+    <section id="view-matches" class="view">
+      <h1>Your best-suited careers</h1>
+      <p class="lead" id="matches-lead">Run a prediction from your profile first.</p>
+      <div id="top-matches" class="grid cards"></div>
+      <div class="card" id="all-fields-card" hidden>
+        <h2>All available fields</h2>
+        <p class="hint">Fit score blends your skill coverage, the ML model's confidence and your interests. Click a row to see the skill gap.</p>
+        <div class="table-wrap"><table id="all-fields"><thead><tr><th>Career</th><th>Domain</th><th>Fit</th><th class="hide-sm">Skill match</th><th class="hide-sm">Outlook</th><th class="hide-sm">Salary (indicative)</th></tr></thead><tbody></tbody></table></div>
+      </div>
+    </section>
+
+    <!-- 3. GAP -->
+    <section id="view-gap" class="view">
+      <h1>Skill gap analysis</h1>
+      <div class="toolbar">
+        <label class="field inline">Target career <select id="gap-career"></select></label>
+        <button id="gap-btn" class="btn primary">Analyse gap</button>
+      </div>
+      <div id="gap-result"></div>
+    </section>
+
+    <!-- 4. INTERVIEW -->
+    <section id="view-interview" class="view">
+      <h1>Mock interview</h1>
+      <div id="interview-setup" class="card">
+        <p class="hint">Questions are based on the selected field and your resume: claimed skills, required skills you lack, your projects, a real-world scenario and a behavioral question.</p>
+        <div class="row wrap">
+          <label class="field">Field <select id="iv-career"></select></label>
+          <label class="field">Difficulty
+            <select id="iv-difficulty"><option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option></select>
+          </label>
+          <label class="field">Questions <input id="iv-count" type="number" min="4" max="12" value="6"></label>
+        </div>
+        <button id="iv-start" class="btn primary">Start interview</button>
+        <span id="iv-msg" class="msg"></span>
+      </div>
+      <div id="interview-live" hidden>
+        <div class="progress"><div id="iv-progress"></div></div>
+        <div id="iv-thread" class="thread"></div>
+        <div id="iv-answer-box" class="card answer-box">
+          <textarea id="iv-answer" rows="6" placeholder="Type your answer. Aim for 4-8 sentences with specifics and examples."></textarea>
+          <div class="row between">
+            <small id="iv-words" class="hint">0 words</small>
+            <div>
+              <button id="iv-skip" class="btn ghost">Skip</button>
+              <button id="iv-submit" class="btn primary">Submit answer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="interview-report"></div>
+    </section>
+  </main>
+
+  <footer>Predictions and salary ranges are indicative guidance, not guarantees. <a href="/docs">API docs</a></footer>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

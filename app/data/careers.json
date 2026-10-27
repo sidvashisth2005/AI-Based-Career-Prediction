@@ -1,0 +1,593 @@
+[
+  {
+    "id": "backend_developer",
+    "title": "Backend Developer",
+    "domain": "Software Engineering",
+    "description": "Builds the server-side logic, APIs and databases that power web and mobile applications.",
+    "interests": ["coding", "infrastructure", "research"],
+    "core": [
+      {"any_of": ["Python", "Java", "Go", "Node.js", "C#"], "label": "Backend language", "weight": 3},
+      {"skill": "SQL", "weight": 3},
+      {"skill": "REST APIs", "weight": 3},
+      {"skill": "Data Structures & Algorithms", "weight": 2},
+      {"any_of": ["Django", "Flask", "FastAPI", "Spring Boot", "Express.js"], "label": "Backend framework", "weight": 2},
+      {"skill": "Git", "weight": 2},
+      {"skill": "Database Design", "weight": 2}
+    ],
+    "secondary": ["Docker", "Redis", "System Design", "Microservices", "Linux", "PostgreSQL", "MongoDB", "AWS", "CI/CD"],
+    "salary": {"fresher": "4-10 LPA", "mid": "12-25 LPA", "senior": "30-60 LPA"},
+    "outlook": "Very High",
+    "roadmap_url": "https://roadmap.sh/backend",
+    "project_ideas": ["URL shortener with analytics, rate limiting and caching", "E-commerce REST API with auth, payments sandbox and order workflow", "Real-time chat service using WebSockets and Redis pub/sub"],
+    "certifications": ["AWS Certified Developer - Associate", "Oracle Certified Professional: Java SE Developer"],
+    "scenarios": [
+      {"question": "Your API endpoint that lists orders has become slow as the table grew to 10 million rows. How would you investigate and fix it?", "keywords": ["index", "query plan", "explain", "pagination", "cache", "profiling", "n+1", "limit"], "ideal": "Measure first (logs, APM, EXPLAIN), add the right composite index, paginate with keyset/cursor pagination, avoid N+1 queries, cache hot reads, and archive old data if needed."}
+    ]
+  },
+  {
+    "id": "frontend_developer",
+    "title": "Frontend Developer",
+    "domain": "Software Engineering",
+    "description": "Creates the interactive, accessible and fast user interfaces people use in the browser.",
+    "interests": ["coding", "design", "creativity"],
+    "core": [
+      {"skill": "HTML", "weight": 3},
+      {"skill": "CSS", "weight": 3},
+      {"skill": "JavaScript", "weight": 3},
+      {"any_of": ["React", "Angular", "Vue.js"], "label": "Frontend framework", "weight": 3},
+      {"skill": "Responsive Design", "weight": 2},
+      {"skill": "Git", "weight": 2},
+      {"skill": "TypeScript", "weight": 2}
+    ],
+    "secondary": ["Next.js", "Tailwind CSS", "Web Performance", "REST APIs", "Figma", "Test Automation", "GraphQL"],
+    "salary": {"fresher": "3.5-8 LPA", "mid": "10-22 LPA", "senior": "25-50 LPA"},
+    "outlook": "High",
+    "roadmap_url": "https://roadmap.sh/frontend",
+    "project_ideas": ["Personal portfolio with dark mode, animations and a Lighthouse score above 95", "Kanban board with drag and drop and offline persistence", "Movie discovery app consuming a public API with search, filters and infinite scroll"],
+    "certifications": ["Meta Front-End Developer Professional Certificate", "freeCodeCamp Responsive Web Design"],
+    "scenarios": [
+      {"question": "Users complain that your React dashboard feels laggy when typing in a search box over a list of 5,000 items. What would you do?", "keywords": ["debounce", "memo", "virtualization", "re-render", "profiler", "usememo", "pagination", "state"], "ideal": "Profile with React DevTools, debounce the input, memoize derived data with useMemo/React.memo, virtualize the list (windowing), and keep state local to avoid re-rendering the whole tree."}
+    ]
+  },
+  {
+    "id": "full_stack_developer",
+    "title": "Full Stack Developer",
+    "domain": "Software Engineering",
+    "description": "Owns features end to end, from the user interface through APIs to the database and deployment.",
+    "interests": ["coding", "design", "infrastructure"],
+    "core": [
+      {"skill": "JavaScript", "weight": 3},
+      {"any_of": ["React", "Angular", "Vue.js"], "label": "Frontend framework", "weight": 3},
+      {"any_of": ["Node.js", "Python", "Java", "Go"], "label": "Backend language", "weight": 3},
+      {"skill": "SQL", "weight": 2},
+      {"skill": "REST APIs", "weight": 3},
+      {"skill": "HTML", "weight": 2},
+      {"skill": "CSS", "weight": 2},
+      {"skill": "Git", "weight": 2}
+    ],
+    "secondary": ["TypeScript", "MongoDB", "Express.js", "Docker", "Next.js", "AWS", "System Design", "CI/CD"],
+    "salary": {"fresher": "4-10 LPA", "mid": "12-25 LPA", "senior": "30-55 LPA"},
+    "outlook": "Very High",
+    "roadmap_url": "https://roadmap.sh/full-stack",
+    "project_ideas": ["MERN-stack job board with authentication, roles and resume upload", "Expense splitter app with a REST API, charts and email reminders", "Collaborative notes app with real-time sync"],
+    "certifications": ["Meta Full-Stack Engineer path", "MongoDB Associate Developer"],
+    "scenarios": [
+      {"question": "You need to add login to an existing web app. Describe how you would implement authentication securely across frontend and backend.", "keywords": ["hash", "bcrypt", "jwt", "session", "cookie", "httponly", "https", "csrf", "refresh token"], "ideal": "Hash passwords with bcrypt/argon2, issue a session or short-lived JWT plus refresh token stored in an HttpOnly Secure cookie, protect against CSRF, enforce HTTPS, rate-limit login, and validate tokens on every API request."}
+    ]
+  },
+  {
+    "id": "mobile_developer",
+    "title": "Mobile App Developer",
+    "domain": "Software Engineering",
+    "description": "Designs and builds native or cross-platform apps for Android and iOS devices.",
+    "interests": ["coding", "design", "creativity"],
+    "core": [
+      {"any_of": ["Android Development", "iOS Development", "Flutter", "React Native"], "label": "Mobile platform", "weight": 3},
+      {"any_of": ["Kotlin", "Java", "Swift", "Dart", "JavaScript"], "label": "Mobile language", "weight": 3},
+      {"skill": "REST APIs", "weight": 2},
+      {"skill": "OOP", "weight": 2},
+      {"skill": "Git", "weight": 2},
+      {"skill": "UI Design", "weight": 1}
+    ],
+    "secondary": ["GCP", "SQL", "Test Automation", "CI/CD", "Figma", "Data Structures & Algorithms"],
+    "salary": {"fresher": "3.5-8 LPA", "mid": "10-20 LPA", "senior": "25-45 LPA"},
+    "outlook": "High",
+    "roadmap_url": "https://roadmap.sh/android",
+    "project_ideas": ["Habit tracker with local database, notifications and widgets", "Campus marketplace app with Firebase auth and image upload", "Offline-first news reader with caching and dark mode"],
+    "certifications": ["Associate Android Developer (Google)", "Meta React Native Specialization"],
+    "scenarios": [
+      {"question": "Your app is getting poor reviews for battery drain and slowness on low-end phones. How do you diagnose and fix it?", "keywords": ["profiler", "background", "memory leak", "battery", "network", "cache", "image", "main thread"], "ideal": "Use platform profilers to find main-thread work and memory leaks, batch/background network calls with WorkManager, compress and cache images, reduce wake-locks and polling, and test on low-end devices."}
+    ]
+  },
+  {
+    "id": "data_scientist",
+    "title": "Data Scientist",
+    "domain": "Data & AI",
+    "description": "Uses statistics and machine learning to extract insights and build predictive models from data.",
+    "interests": ["data", "math", "research"],
+    "core": [
+      {"skill": "Python", "weight": 3},
+      {"skill": "Statistics", "weight": 3},
+      {"skill": "Machine Learning", "weight": 3},
+      {"skill": "SQL", "weight": 2},
+      {"skill": "Pandas", "weight": 2},
+      {"skill": "Data Visualization", "weight": 2},
+      {"skill": "Scikit-learn", "weight": 2},
+      {"skill": "Mathematics", "weight": 2}
+    ],
+    "secondary": ["Deep Learning", "NumPy", "R", "Big Data", "Data Analysis", "TensorFlow", "PyTorch", "Communication", "Generative AI"],
+    "salary": {"fresher": "6-12 LPA", "mid": "15-30 LPA", "senior": "35-70 LPA"},
+    "outlook": "Very High",
+    "roadmap_url": "https://roadmap.sh/ai-data-scientist",
+    "project_ideas": ["Customer churn prediction with feature engineering and SHAP explanations", "House price regression with a deployed Streamlit app", "A/B test analysis of a marketing campaign with a written report"],
+    "certifications": ["IBM Data Science Professional Certificate", "Google Advanced Data Analytics Certificate"],
+    "scenarios": [
+      {"question": "Your fraud detection model has 99% accuracy but the business says it misses most fraud. What is going on and how would you fix it?", "keywords": ["imbalance", "precision", "recall", "f1", "threshold", "smote", "class weight", "roc", "pr curve"], "ideal": "The data is imbalanced, so accuracy is misleading. Evaluate with precision, recall, F1 and PR-AUC; use class weights, resampling (SMOTE/undersampling), tune the decision threshold for business cost, and monitor recall on fraud."}
+    ]
+  },
+  {
+    "id": "data_analyst",
+    "title": "Data Analyst",
+    "domain": "Data & AI",
+    "description": "Turns raw business data into dashboards, reports and recommendations that drive decisions.",
+    "interests": ["data", "business", "math"],
+    "core": [
+      {"skill": "SQL", "weight": 3},
+      {"skill": "Excel", "weight": 3},
+      {"any_of": ["Power BI", "Tableau"], "label": "BI tool", "weight": 3},
+      {"skill": "Data Analysis", "weight": 3},
+      {"skill": "Statistics", "weight": 2},
+      {"skill": "Data Visualization", "weight": 2},
+      {"skill": "Communication", "weight": 2}
+    ],
+    "secondary": ["Python", "Pandas", "R", "Google Analytics", "Problem Solving", "Market Research"],
+    "salary": {"fresher": "3.5-7 LPA", "mid": "8-16 LPA", "senior": "18-35 LPA"},
+    "outlook": "High",
+    "roadmap_url": "https://roadmap.sh/data-analyst",
+    "project_ideas": ["Sales performance dashboard in Power BI with drill-downs", "SQL analysis of an e-commerce dataset answering 10 business questions", "Excel model analysing student performance trends"],
+    "certifications": ["Google Data Analytics Professional Certificate", "Microsoft PL-300: Power BI Data Analyst"],
+    "scenarios": [
+      {"question": "Monthly revenue dropped 15% and your manager asks why by tomorrow. How would you approach it?", "keywords": ["segment", "region", "product", "trend", "seasonality", "data quality", "drill down", "hypothesis", "dashboard"], "ideal": "Validate data quality first, then break revenue down by segment (region, product, channel, customer cohort), compare against seasonality and last year, form and test hypotheses, and present the top drivers with a clear chart and recommendation."}
+    ]
+  },
+  {
+    "id": "ml_engineer",
+    "title": "Machine Learning Engineer",
+    "domain": "Data & AI",
+    "description": "Builds, deploys and scales machine learning models as reliable production systems.",
+    "interests": ["coding", "data", "math", "research"],
+    "core": [
+      {"skill": "Python", "weight": 3},
+      {"skill": "Machine Learning", "weight": 3},
+      {"skill": "Deep Learning", "weight": 3},
+      {"any_of": ["TensorFlow", "PyTorch"], "label": "DL framework", "weight": 3},
+      {"skill": "Data Structures & Algorithms", "weight": 2},
+      {"skill": "MLOps", "weight": 2},
+      {"skill": "Mathematics", "weight": 2},
+      {"skill": "SQL", "weight": 1}
+    ],
+    "secondary": ["Docker", "Kubernetes", "AWS", "Scikit-learn", "NLP", "Computer Vision", "Big Data", "Git", "Generative AI", "FastAPI"],
+    "salary": {"fresher": "7-15 LPA", "mid": "18-35 LPA", "senior": "40-80 LPA"},
+    "outlook": "Very High",
+    "roadmap_url": "https://roadmap.sh/mlops",
+    "project_ideas": ["Image classifier served via FastAPI in Docker with monitoring", "End-to-end ML pipeline with MLflow tracking and CI retraining", "Recommendation system with offline evaluation and an online API"],
+    "certifications": ["Google Professional Machine Learning Engineer", "AWS Certified Machine Learning - Specialty"],
+    "scenarios": [
+      {"question": "A model that performed well offline is performing poorly two months after deployment. How do you handle it?", "keywords": ["drift", "data drift", "concept drift", "monitoring", "retrain", "feature", "distribution", "pipeline", "rollback"], "ideal": "Check for data drift and concept drift by comparing feature and prediction distributions with training data, verify the feature pipeline (training/serving skew), set up monitoring and alerts, retrain on recent data, and use shadow/canary deployments with rollback."}
+    ]
+  },
+  {
+    "id": "ai_engineer",
+    "title": "AI / LLM Engineer",
+    "domain": "Data & AI",
+    "description": "Builds products on top of large language models: RAG systems, agents, evaluations and AI features.",
+    "interests": ["coding", "research", "data"],
+    "core": [
+      {"skill": "Python", "weight": 3},
+      {"skill": "Generative AI", "weight": 3},
+      {"skill": "NLP", "weight": 2},
+      {"skill": "REST APIs", "weight": 2},
+      {"skill": "Machine Learning", "weight": 2},
+      {"any_of": ["FastAPI", "Flask", "Django", "Node.js"], "label": "API framework", "weight": 2},
+      {"skill": "Git", "weight": 1}
+    ],
+    "secondary": ["Deep Learning", "PyTorch", "Docker", "MLOps", "SQL", "AWS", "Data Engineering", "System Design"],
+    "salary": {"fresher": "8-16 LPA", "mid": "20-40 LPA", "senior": "45-90 LPA"},
+    "outlook": "Very High",
+    "roadmap_url": "https://roadmap.sh/ai-engineer",
+    "project_ideas": ["RAG chatbot over your college's documents with citations and an evaluation set", "AI resume reviewer that scores resumes against job descriptions", "Tool-using agent that books meetings from natural language"],
+    "certifications": ["DeepLearning.AI Generative AI with LLMs", "Anthropic / cloud provider AI courses"],
+    "scenarios": [
+      {"question": "Your RAG chatbot sometimes answers confidently with information that is not in the documents. How would you reduce this?", "keywords": ["retrieval", "chunk", "embedding", "citation", "evaluation", "prompt", "grounding", "rerank", "hallucination"], "ideal": "Improve retrieval quality (chunking, embeddings, hybrid search, reranking), instruct the model to answer only from retrieved context and cite sources, allow it to say it does not know, and build an evaluation set to measure groundedness before and after each change."}
+    ]
+  },
+  {
+    "id": "data_engineer",
+    "title": "Data Engineer",
+    "domain": "Data & AI",
+    "description": "Designs the pipelines and warehouses that move, clean and store data at scale.",
+    "interests": ["data", "coding", "infrastructure"],
+    "core": [
+      {"skill": "SQL", "weight": 3},
+      {"skill": "Python", "weight": 3},
+      {"skill": "Data Engineering", "weight": 3},
+      {"skill": "Big Data", "weight": 3},
+      {"skill": "Database Design", "weight": 2},
+      {"any_of": ["AWS", "Azure", "GCP"], "label": "Cloud platform", "weight": 2},
+      {"skill": "Linux", "weight": 1}
+    ],
+    "secondary": ["Scala", "Docker", "Kubernetes", "PostgreSQL", "MongoDB", "CI/CD", "Shell Scripting", "Git"],
+    "salary": {"fresher": "5-11 LPA", "mid": "14-28 LPA", "senior": "30-60 LPA"},
+    "outlook": "Very High",
+    "roadmap_url": "https://roadmap.sh/data-engineer",
+    "project_ideas": ["Airflow pipeline ingesting public API data into a warehouse with dbt models", "Real-time clickstream processing with Kafka and Spark Streaming", "Data quality checks and alerting for a daily ETL job"],
+    "certifications": ["Google Professional Data Engineer", "Databricks Data Engineer Associate"],
+    "scenarios": [
+      {"question": "A nightly ETL job that used to take 1 hour now takes 6 hours and sometimes fails. What would you do?", "keywords": ["partition", "incremental", "skew", "parallel", "monitoring", "retry", "idempotent", "bottleneck", "logs"], "ideal": "Find the bottleneck from logs and metrics, switch full loads to incremental loads, partition data and fix skew, parallelise independent tasks, make steps idempotent with retries, and add monitoring/alerts on duration and row counts."}
+    ]
+  },
+  {
+    "id": "devops_engineer",
+    "title": "DevOps Engineer",
+    "domain": "Cloud & Infrastructure",
+    "description": "Automates building, testing, deploying and operating software reliably at scale.",
+    "interests": ["infrastructure", "coding", "security"],
+    "core": [
+      {"skill": "Linux", "weight": 3},
+      {"skill": "Docker", "weight": 3},
+      {"skill": "CI/CD", "weight": 3},
+      {"skill": "Kubernetes", "weight": 2},
+      {"any_of": ["AWS", "Azure", "GCP"], "label": "Cloud platform", "weight": 3},
+      {"skill": "Shell Scripting", "weight": 2},
+      {"skill": "Git", "weight": 2},
+      {"skill": "Terraform", "weight": 2}
+    ],
+    "secondary": ["Python", "Monitoring", "Networking", "Go", "Network Security", "Microservices"],
+    "salary": {"fresher": "4-9 LPA", "mid": "12-25 LPA", "senior": "28-55 LPA"},
+    "outlook": "Very High",
+    "roadmap_url": "https://roadmap.sh/devops",
+    "project_ideas": ["CI/CD pipeline that tests, builds a Docker image and deploys to Kubernetes", "Infrastructure for a 3-tier app on AWS written in Terraform", "Prometheus + Grafana monitoring stack with alerting for a sample app"],
+    "certifications": ["AWS Certified SysOps Administrator", "Certified Kubernetes Administrator (CKA)", "HashiCorp Terraform Associate"],
+    "scenarios": [
+      {"question": "A deployment just went out and error rates spiked to 20%. Walk me through what you do in the next 30 minutes.", "keywords": ["rollback", "monitoring", "logs", "alert", "communicate", "root cause", "canary", "postmortem", "incident"], "ideal": "Declare an incident and communicate, check dashboards/logs to confirm correlation with the deploy, roll back quickly to restore service, then investigate root cause, add tests or canary checks, and write a blameless postmortem."}
+    ]
+  },
+  {
+    "id": "cloud_architect",
+    "title": "Cloud Engineer / Architect",
+    "domain": "Cloud & Infrastructure",
+    "description": "Designs secure, scalable and cost-efficient systems on cloud platforms.",
+    "interests": ["infrastructure", "business", "security"],
+    "core": [
+      {"any_of": ["AWS", "Azure", "GCP"], "label": "Cloud platform", "weight": 3},
+      {"skill": "Networking", "weight": 3},
+      {"skill": "System Design", "weight": 3},
+      {"skill": "Linux", "weight": 2},
+      {"skill": "Terraform", "weight": 2},
+      {"skill": "Network Security", "weight": 2},
+      {"skill": "Docker", "weight": 2}
+    ],
+    "secondary": ["Kubernetes", "Microservices", "CI/CD", "Monitoring", "Python", "Database Design", "Stakeholder Management"],
+    "salary": {"fresher": "5-10 LPA", "mid": "15-30 LPA", "senior": "35-70 LPA"},
+    "outlook": "Very High",
+    "roadmap_url": "https://roadmap.sh/aws",
+    "project_ideas": ["Highly available web app across two availability zones with auto scaling", "Serverless image-processing pipeline with event triggers", "Cloud cost dashboard and right-sizing recommendations"],
+    "certifications": ["AWS Certified Solutions Architect - Associate", "Microsoft AZ-104", "Google Associate Cloud Engineer"],
+    "scenarios": [
+      {"question": "Design the infrastructure for an exam-results website that gets 100x normal traffic for one hour when results are announced.", "keywords": ["autoscaling", "cdn", "cache", "load balancer", "static", "queue", "database", "read replica", "load test"], "ideal": "Serve results as cached/static content behind a CDN, put a load balancer with autoscaling in front of stateless app servers, pre-warm capacity, use read replicas or a cache for lookups, queue writes, and load test beforehand."}
+    ]
+  },
+  {
+    "id": "cybersecurity_analyst",
+    "title": "Cybersecurity Analyst",
+    "domain": "Security",
+    "description": "Protects organisations by monitoring threats, finding vulnerabilities and responding to incidents.",
+    "interests": ["security", "infrastructure", "research"],
+    "core": [
+      {"skill": "Networking", "weight": 3},
+      {"skill": "Network Security", "weight": 3},
+      {"skill": "Linux", "weight": 2},
+      {"skill": "SIEM", "weight": 2},
+      {"skill": "Ethical Hacking", "weight": 2},
+      {"skill": "Incident Response", "weight": 2},
+      {"skill": "Cryptography", "weight": 2}
+    ],
+    "secondary": ["Python", "Shell Scripting", "AWS", "Operating Systems", "Communication", "Problem Solving"],
+    "salary": {"fresher": "4-8 LPA", "mid": "10-22 LPA", "senior": "25-50 LPA"},
+    "outlook": "Very High",
+    "roadmap_url": "https://roadmap.sh/cyber-security",
+    "project_ideas": ["Home SOC lab with a SIEM ingesting logs and detection rules", "Vulnerability assessment of a deliberately vulnerable app (DVWA/Juice Shop) with a report", "Phishing email analyser that flags suspicious links and headers"],
+    "certifications": ["CompTIA Security+", "Certified Ethical Hacker (CEH)", "Google Cybersecurity Certificate"],
+    "scenarios": [
+      {"question": "An employee reports that they clicked a link in a suspicious email and entered their password. What do you do?", "keywords": ["reset", "password", "mfa", "contain", "logs", "isolate", "phishing", "block", "investigate", "awareness"], "ideal": "Contain first: reset the password, revoke sessions and enforce MFA; check sign-in and mailbox logs for misuse, isolate the device if malware is suspected, block the sender/domain, search for other recipients, document the incident and run awareness follow-up."}
+    ]
+  },
+  {
+    "id": "ui_ux_designer",
+    "title": "UI/UX Designer",
+    "domain": "Design",
+    "description": "Researches user needs and designs intuitive, beautiful digital experiences.",
+    "interests": ["design", "creativity", "people", "research"],
+    "core": [
+      {"skill": "Figma", "weight": 3},
+      {"skill": "UI Design", "weight": 3},
+      {"skill": "UX Research", "weight": 3},
+      {"skill": "Wireframing", "weight": 3},
+      {"skill": "Communication", "weight": 2},
+      {"skill": "Responsive Design", "weight": 1}
+    ],
+    "secondary": ["Graphic Design Tools", "HTML", "CSS", "Market Research", "Problem Solving", "Agile"],
+    "salary": {"fresher": "3.5-8 LPA", "mid": "10-20 LPA", "senior": "22-45 LPA"},
+    "outlook": "High",
+    "roadmap_url": "https://roadmap.sh/ux-design",
+    "project_ideas": ["Redesign case study of a government or college website with usability testing", "Design system with components, tokens and documentation in Figma", "Mobile app for a local business from research to high-fidelity prototype"],
+    "certifications": ["Google UX Design Professional Certificate", "Interaction Design Foundation courses"],
+    "scenarios": [
+      {"question": "Analytics show 60% of users drop off on the sign-up screen of your app. How would you find out why and improve it?", "keywords": ["usability test", "interview", "funnel", "hypothesis", "friction", "a/b test", "fields", "prototype", "iterate"], "ideal": "Analyse the funnel to find the exact step, run usability tests and short interviews to see the friction, form hypotheses (too many fields, unclear value, errors), prototype simplifications such as fewer fields or social login, and validate with an A/B test."}
+    ]
+  },
+  {
+    "id": "product_manager",
+    "title": "Product Manager",
+    "domain": "Business & Management",
+    "description": "Decides what to build and why, aligning users, business goals and engineering teams.",
+    "interests": ["business", "management", "people", "communication"],
+    "core": [
+      {"skill": "Product Management", "weight": 3},
+      {"skill": "Communication", "weight": 3},
+      {"skill": "Stakeholder Management", "weight": 3},
+      {"skill": "Agile", "weight": 2},
+      {"skill": "Market Research", "weight": 2},
+      {"skill": "Data Analysis", "weight": 2},
+      {"skill": "Requirements Gathering", "weight": 2}
+    ],
+    "secondary": ["SQL", "UX Research", "Leadership", "Problem Solving", "Wireframing", "Google Analytics", "Excel"],
+    "salary": {"fresher": "8-15 LPA", "mid": "18-35 LPA", "senior": "40-80 LPA"},
+    "outlook": "High",
+    "roadmap_url": "https://roadmap.sh/product-manager",
+    "project_ideas": ["Product teardown and improvement proposal for an app you use daily", "PRD with user stories, metrics and a launch plan for a new feature", "Run a small survey + interviews and synthesise them into a prioritised roadmap"],
+    "certifications": ["Certified Scrum Product Owner (CSPO)", "Product School Product Manager Certification"],
+    "scenarios": [
+      {"question": "Sales wants feature A for a big client, engineering wants to fix tech debt, and users are asking for feature B. You can only do one this quarter. How do you decide?", "keywords": ["prioritization", "impact", "effort", "rice", "data", "stakeholder", "goal", "trade-off", "communicate"], "ideal": "Anchor on company goals and metrics, estimate impact, reach, confidence and effort (e.g. RICE), gather data on each option, discuss trade-offs openly with stakeholders, make and document the decision, and communicate the rationale and what comes next."}
+    ]
+  },
+  {
+    "id": "business_analyst",
+    "title": "Business Analyst",
+    "domain": "Business & Management",
+    "description": "Bridges business and technology by analysing processes, gathering requirements and recommending solutions.",
+    "interests": ["business", "data", "communication", "people"],
+    "core": [
+      {"skill": "Requirements Gathering", "weight": 3},
+      {"skill": "Excel", "weight": 3},
+      {"skill": "SQL", "weight": 2},
+      {"skill": "Communication", "weight": 3},
+      {"skill": "Stakeholder Management", "weight": 2},
+      {"skill": "Data Analysis", "weight": 2},
+      {"any_of": ["Power BI", "Tableau"], "label": "BI tool", "weight": 1}
+    ],
+    "secondary": ["Agile", "Problem Solving", "Market Research", "Product Management", "Data Visualization", "Wireframing"],
+    "salary": {"fresher": "4-8 LPA", "mid": "10-18 LPA", "senior": "20-40 LPA"},
+    "outlook": "High",
+    "roadmap_url": "https://www.coursera.org/search?query=business%20analysis",
+    "project_ideas": ["Process map and improvement proposal for a college admission workflow", "BRD and user stories for a library management system", "KPI dashboard for a small business with recommendations"],
+    "certifications": ["IIBA ECBA", "Microsoft PL-300: Power BI Data Analyst"],
+    "scenarios": [
+      {"question": "Two departments give you conflicting requirements for the same system. How do you resolve it?", "keywords": ["stakeholder", "meeting", "priority", "goal", "document", "trade-off", "sign-off", "requirement", "escalate"], "ideal": "Understand the underlying goal of each department, document both requirements clearly, bring stakeholders together to discuss trade-offs against business objectives, propose options, escalate to the sponsor if needed, and get written sign-off."}
+    ]
+  },
+  {
+    "id": "digital_marketer",
+    "title": "Digital Marketing Specialist",
+    "domain": "Marketing",
+    "description": "Grows brands and sales through SEO, social media, content and paid campaigns.",
+    "interests": ["business", "creativity", "communication", "writing"],
+    "core": [
+      {"skill": "SEO", "weight": 3},
+      {"skill": "Social Media Marketing", "weight": 3},
+      {"skill": "Content Writing", "weight": 2},
+      {"skill": "Digital Advertising", "weight": 3},
+      {"skill": "Google Analytics", "weight": 2},
+      {"skill": "Communication", "weight": 2}
+    ],
+    "secondary": ["Market Research", "Excel", "Graphic Design Tools", "Data Analysis", "Sales"],
+    "salary": {"fresher": "3-6 LPA", "mid": "7-15 LPA", "senior": "18-35 LPA"},
+    "outlook": "High",
+    "roadmap_url": "https://skillshop.withgoogle.com/",
+    "project_ideas": ["Grow an Instagram page or blog for 60 days and report the metrics", "SEO audit of a local business website with an action plan", "Run a small Google Ads campaign with a fixed budget and analyse ROAS"],
+    "certifications": ["Google Ads Certification", "HubSpot Content Marketing Certification", "Google Analytics Certification"],
+    "scenarios": [
+      {"question": "You have a budget of 50,000 rupees to launch a new product online. How would you plan and measure the campaign?", "keywords": ["target audience", "channel", "budget", "kpi", "conversion", "a/b test", "roas", "content", "tracking"], "ideal": "Define the target audience and goal, choose channels that reach them, split budget with a test-and-scale approach, set KPIs (CTR, CPA, conversions, ROAS), set up tracking with analytics/UTM tags, A/B test creatives, and reallocate budget to what performs."}
+    ]
+  },
+  {
+    "id": "embedded_engineer",
+    "title": "Embedded Systems / IoT Engineer",
+    "domain": "Hardware & Electronics",
+    "description": "Programs microcontrollers and builds connected devices that interact with the physical world.",
+    "interests": ["hardware", "coding", "research"],
+    "core": [
+      {"skill": "C", "weight": 3},
+      {"skill": "Embedded C", "weight": 3},
+      {"skill": "Microcontrollers", "weight": 3},
+      {"skill": "Electronics", "weight": 3},
+      {"skill": "RTOS", "weight": 2},
+      {"skill": "IoT", "weight": 2}
+    ],
+    "secondary": ["C++", "Python", "Linux", "Networking", "Git", "Operating Systems"],
+    "salary": {"fresher": "3.5-7 LPA", "mid": "8-18 LPA", "senior": "20-40 LPA"},
+    "outlook": "High",
+    "roadmap_url": "https://www.coursera.org/search?query=embedded%20systems",
+    "project_ideas": ["Smart irrigation system with soil sensors, ESP32 and a mobile dashboard", "RTOS-based data logger with SD card and low-power modes", "Gesture-controlled robot using an accelerometer"],
+    "certifications": ["ARM Accredited Engineer", "NPTEL Embedded Systems"],
+    "scenarios": [
+      {"question": "Your battery-powered sensor node should last a year but the battery dies in two weeks. How do you fix it?", "keywords": ["sleep", "low power", "current", "measure", "duty cycle", "radio", "interrupt", "clock", "peripheral"], "ideal": "Measure current in each state, put the MCU in deep sleep and wake on timer/interrupt, reduce duty cycle and radio on-time, batch transmissions, lower clock speed, and disable unused peripherals and pull-ups."}
+    ]
+  },
+  {
+    "id": "game_developer",
+    "title": "Game Developer",
+    "domain": "Gaming",
+    "description": "Builds gameplay systems, mechanics and interactive worlds for PC, console and mobile games.",
+    "interests": ["gaming", "coding", "creativity", "math"],
+    "core": [
+      {"any_of": ["Unity", "Unreal Engine"], "label": "Game engine", "weight": 3},
+      {"any_of": ["C#", "C++"], "label": "Game language", "weight": 3},
+      {"skill": "Game Design", "weight": 2},
+      {"skill": "Mathematics", "weight": 2},
+      {"skill": "OOP", "weight": 2},
+      {"skill": "Data Structures & Algorithms", "weight": 1}
+    ],
+    "secondary": ["3D Modeling", "Git", "Graphic Design Tools", "Python", "Problem Solving"],
+    "salary": {"fresher": "3-7 LPA", "mid": "8-18 LPA", "senior": "20-40 LPA"},
+    "outlook": "Moderate",
+    "roadmap_url": "https://roadmap.sh/game-developer",
+    "project_ideas": ["2D platformer with three levels, enemies and a save system", "Multiplayer party game prototype", "Physics-based puzzle game published on itch.io"],
+    "certifications": ["Unity Certified User: Programmer", "Unreal Engine learning paths"],
+    "scenarios": [
+      {"question": "Your mobile game drops to 20 FPS when many enemies are on screen. How would you optimise it?", "keywords": ["profiler", "object pooling", "draw calls", "batching", "garbage", "lod", "physics", "update"], "ideal": "Profile CPU/GPU first, use object pooling to avoid allocations and GC spikes, reduce draw calls with batching and texture atlases, use LOD and culling, simplify physics and move work out of Update loops."}
+    ]
+  },
+  {
+    "id": "blockchain_developer",
+    "title": "Blockchain Developer",
+    "domain": "Web3",
+    "description": "Builds smart contracts and decentralised applications on blockchain platforms.",
+    "interests": ["coding", "security", "finance", "research"],
+    "core": [
+      {"skill": "Blockchain", "weight": 3},
+      {"skill": "Solidity", "weight": 3},
+      {"skill": "JavaScript", "weight": 2},
+      {"skill": "Cryptography", "weight": 2},
+      {"skill": "Data Structures & Algorithms", "weight": 2},
+      {"skill": "Git", "weight": 1}
+    ],
+    "secondary": ["React", "Node.js", "Rust", "Go", "Network Security", "TypeScript"],
+    "salary": {"fresher": "5-12 LPA", "mid": "15-30 LPA", "senior": "35-70 LPA"},
+    "outlook": "Moderate",
+    "roadmap_url": "https://roadmap.sh/blockchain",
+    "project_ideas": ["ERC-20 token and a staking contract with tests", "Decentralised voting dApp with a React frontend", "NFT certificate issuance system for college events"],
+    "certifications": ["Certified Blockchain Developer (Blockchain Council)", "Ethereum developer bootcamps"],
+    "scenarios": [
+      {"question": "How would you make sure a smart contract that holds user funds is secure before deploying it?", "keywords": ["reentrancy", "audit", "test", "overflow", "access control", "checks-effects-interactions", "testnet", "static analysis", "upgrade"], "ideal": "Follow checks-effects-interactions and use reentrancy guards, add access control, use audited libraries like OpenZeppelin, write thorough unit and fuzz tests, run static analysis (Slither), deploy to a testnet, and get an independent audit."}
+    ]
+  },
+  {
+    "id": "qa_engineer",
+    "title": "QA / Test Automation Engineer",
+    "domain": "Software Engineering",
+    "description": "Ensures software quality through test strategy, automated test suites and release validation.",
+    "interests": ["coding", "research", "communication"],
+    "core": [
+      {"skill": "Software Testing", "weight": 3},
+      {"skill": "Test Automation", "weight": 3},
+      {"any_of": ["Python", "Java", "JavaScript"], "label": "Scripting language", "weight": 2},
+      {"skill": "API Testing", "weight": 2},
+      {"skill": "SQL", "weight": 2},
+      {"skill": "Agile", "weight": 1}
+    ],
+    "secondary": ["CI/CD", "Git", "Linux", "Communication", "Docker", "Problem Solving"],
+    "salary": {"fresher": "3-6 LPA", "mid": "8-16 LPA", "senior": "18-35 LPA"},
+    "outlook": "Moderate",
+    "roadmap_url": "https://roadmap.sh/qa",
+    "project_ideas": ["Selenium/Playwright test suite for a demo e-commerce site using page objects", "API test collection with Postman/Newman running in CI", "Test plan and bug reports for an open-source app"],
+    "certifications": ["ISTQB Foundation Level", "Certified Selenium Professional"],
+    "scenarios": [
+      {"question": "Your automated UI test suite is flaky: about 10% of tests fail randomly. How do you fix it?", "keywords": ["wait", "explicit wait", "locator", "isolation", "test data", "retry", "environment", "logs", "quarantine"], "ideal": "Find patterns in failures from logs/screenshots, replace sleeps with explicit waits, use stable locators, isolate tests and their test data, stabilise the environment, quarantine flaky tests while fixing them, and move checks down to the API level where possible."}
+    ]
+  },
+  {
+    "id": "network_engineer",
+    "title": "Network Engineer",
+    "domain": "Cloud & Infrastructure",
+    "description": "Designs, configures and maintains the networks that connect organisations and data centres.",
+    "interests": ["infrastructure", "hardware", "security"],
+    "core": [
+      {"skill": "Networking", "weight": 3},
+      {"skill": "Network Security", "weight": 2},
+      {"skill": "Linux", "weight": 2},
+      {"skill": "Operating Systems", "weight": 1},
+      {"skill": "Shell Scripting", "weight": 1},
+      {"skill": "Problem Solving", "weight": 2}
+    ],
+    "secondary": ["Python", "AWS", "Azure", "Monitoring", "Cryptography", "Communication"],
+    "salary": {"fresher": "3-6 LPA", "mid": "7-15 LPA", "senior": "18-35 LPA"},
+    "outlook": "Moderate",
+    "roadmap_url": "https://www.coursera.org/search?query=computer%20networking",
+    "project_ideas": ["Campus network design in Cisco Packet Tracer with VLANs and ACLs", "Network monitoring setup with SNMP and Grafana", "Python script to back up and audit router configurations"],
+    "certifications": ["Cisco CCNA", "CompTIA Network+"],
+    "scenarios": [
+      {"question": "Users on one floor can reach internal servers but not the internet. How do you troubleshoot?", "keywords": ["ping", "traceroute", "dns", "gateway", "osi", "nat", "firewall", "vlan", "routing"], "ideal": "Work up the OSI layers: check link and VLAN, verify IP configuration and default gateway, ping the gateway and an external IP, test DNS separately, traceroute to see where traffic stops, and check NAT, firewall rules and routing for that subnet."}
+    ]
+  },
+  {
+    "id": "technical_writer",
+    "title": "Technical Writer",
+    "domain": "Communication",
+    "description": "Explains complex products clearly through documentation, guides and API references.",
+    "interests": ["writing", "communication", "coding"],
+    "core": [
+      {"skill": "Technical Writing", "weight": 3},
+      {"skill": "Communication", "weight": 3},
+      {"skill": "Content Writing", "weight": 2},
+      {"skill": "Git", "weight": 2},
+      {"skill": "REST APIs", "weight": 1}
+    ],
+    "secondary": ["HTML", "Python", "JavaScript", "UX Research", "Agile", "SEO"],
+    "salary": {"fresher": "3.5-7 LPA", "mid": "8-16 LPA", "senior": "18-35 LPA"},
+    "outlook": "Moderate",
+    "roadmap_url": "https://roadmap.sh/technical-writer",
+    "project_ideas": ["Rewrite the README and getting-started guide of an open-source project", "API reference with examples for a public API", "Docs site built with a static site generator and docs-as-code workflow"],
+    "certifications": ["Google Technical Writing courses", "Society for Technical Communication (CPTC)"],
+    "scenarios": [
+      {"question": "Developers say your product's documentation is hard to use. How would you improve it?", "keywords": ["audience", "feedback", "structure", "example", "search", "getting started", "analytics", "style guide", "review"], "ideal": "Gather feedback and analytics to find where users struggle, define audiences and their tasks, restructure into tutorials, how-tos, reference and concepts, add runnable examples and a quick start, improve search, and set a style guide and review process."}
+    ]
+  },
+  {
+    "id": "financial_analyst",
+    "title": "Financial Analyst",
+    "domain": "Finance",
+    "description": "Analyses financial data, builds models and advises on investments and business decisions.",
+    "interests": ["finance", "math", "business", "data"],
+    "core": [
+      {"skill": "Financial Modeling", "weight": 3},
+      {"skill": "Accounting", "weight": 3},
+      {"skill": "Excel", "weight": 3},
+      {"skill": "Statistics", "weight": 2},
+      {"skill": "Data Analysis", "weight": 2},
+      {"skill": "Communication", "weight": 2}
+    ],
+    "secondary": ["SQL", "Power BI", "Python", "Market Research", "Problem Solving"],
+    "salary": {"fresher": "4-8 LPA", "mid": "10-20 LPA", "senior": "22-45 LPA"},
+    "outlook": "High",
+    "roadmap_url": "https://corporatefinanceinstitute.com/resources/financial-modeling/",
+    "project_ideas": ["DCF valuation of a listed Indian company with sensitivity analysis", "Personal finance dashboard tracking expenses and investments", "Ratio analysis comparing three companies in the same sector"],
+    "certifications": ["CFA Level I", "Financial Modeling & Valuation Analyst (FMVA)", "NISM certifications"],
+    "scenarios": [
+      {"question": "A company's profits are growing but its cash balance keeps falling. What could explain this and what would you check?", "keywords": ["cash flow", "working capital", "receivables", "inventory", "capex", "debt", "accrual", "cash flow statement"], "ideal": "Profit is accrual-based while cash is not. Check the cash flow statement: growing receivables or inventory (working capital), heavy capex, debt repayments or dividends. Analyse days sales outstanding and inventory days and recommend collection or inventory improvements."}
+    ]
+  },
+  {
+    "id": "hr_specialist",
+    "title": "HR / Talent Acquisition Specialist",
+    "domain": "Business & Management",
+    "description": "Hires, develops and supports people, shaping company culture and employee experience.",
+    "interests": ["people", "communication", "management", "business"],
+    "core": [
+      {"skill": "HR Management", "weight": 3},
+      {"skill": "Communication", "weight": 3},
+      {"skill": "Stakeholder Management", "weight": 2},
+      {"skill": "Excel", "weight": 2},
+      {"skill": "Problem Solving", "weight": 1}
+    ],
+    "secondary": ["Leadership", "Data Analysis", "Sales", "Content Writing", "Social Media Marketing"],
+    "salary": {"fresher": "3-5 LPA", "mid": "6-14 LPA", "senior": "15-35 LPA"},
+    "outlook": "Moderate",
+    "roadmap_url": "https://www.coursera.org/search?query=human%20resource%20management",
+    "project_ideas": ["Design a structured interview process and scorecard for a role", "Employee engagement survey with analysis and action plan", "Onboarding playbook for new hires at a startup"],
+    "certifications": ["SHRM-CP", "LinkedIn Talent Solutions certifications"],
+    "scenarios": [
+      {"question": "A hiring manager rejects every candidate you send and the role has been open for three months. What do you do?", "keywords": ["calibration", "job description", "criteria", "feedback", "market", "sourcing", "scorecard", "expectations"], "ideal": "Hold a calibration meeting to clarify must-have versus nice-to-have criteria, update the job description, agree on a scorecard, collect specific feedback on rejected candidates, share market data on availability and salary, and adjust sourcing channels."}
+    ]
+  }
+]

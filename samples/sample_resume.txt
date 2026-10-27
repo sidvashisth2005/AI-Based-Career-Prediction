@@ -1,0 +1,29 @@
+Aarav Sharma
+aarav.sharma@example.com | github.com/aarav-dev | Pune, India
+
+SUMMARY
+Final-year Computer Science student who enjoys building data-driven products. Comfortable with Python, SQL and machine learning, and curious about deploying models to production.
+
+EDUCATION
+B.Tech in Computer Science and Engineering, ABC Institute of Technology, 2022 - 2026, CGPA 8.4
+Higher Secondary (12th), CBSE, 2022, 91%
+
+EXPERIENCE
+Data Science Intern, FinEdge Analytics, Jun 2025 - Aug 2025
+- Built a customer churn model with scikit-learn and pandas that improved recall by 18%
+- Wrote SQL queries on PostgreSQL to build features from 2M transaction rows
+- Presented weekly insights to the product team using Power BI dashboards
+
+PROJECTS
+Crop Yield Predictor: Random forest model with a Flask API and a React frontend
+Resume Screener: NLP pipeline using spaCy and TF-IDF to rank resumes for a job description
+Campus Event App - Android app in Kotlin with Firebase authentication
+
+SKILLS
+Languages: Python, Java, SQL, JavaScript
+ML & Data: Machine Learning, Pandas, NumPy, Scikit-learn, Matplotlib, Statistics, NLP
+Tools: Git, GitHub, Docker, Linux, Jupyter, Excel
+Soft skills: Communication, Leadership, Problem Solving
+
+CERTIFICATIONS
+Google Data Analytics Professional Certificate

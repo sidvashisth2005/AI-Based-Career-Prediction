@@ -1,0 +1,265 @@
+{
+  "behavioral": [
+    {"question": "Tell me about a time you faced a tough deadline. How did you plan your work and what was the result?", "keywords": ["deadline", "plan", "prioritize", "team", "result", "learned"], "ideal": "Use STAR: describe the situation and deadline, your task, the concrete actions (breaking work down, prioritising, communicating early), and a measurable result plus what you learned."},
+    {"question": "Describe a situation where you disagreed with a teammate. How did you handle it?", "keywords": ["listen", "perspective", "data", "compromise", "communicate", "outcome", "respect"], "ideal": "Show that you listened to understand their view, focused on the shared goal, used data or a small experiment to decide, reached agreement respectfully, and kept the relationship healthy."},
+    {"question": "Tell me about a mistake you made and what you learned from it.", "keywords": ["mistake", "ownership", "fix", "learned", "process", "prevent"], "ideal": "Pick a real mistake, take ownership without blaming others, explain how you fixed the impact, and what you changed so it does not happen again."},
+    {"question": "Give an example of when you took initiative beyond what was expected of you.", "keywords": ["initiative", "noticed", "proposed", "action", "impact", "result"], "ideal": "Describe a problem you noticed, what you proposed and did without being asked, and the measurable impact it had on the team or project."},
+    {"question": "How do you learn a new technology or skill quickly? Give a recent example.", "keywords": ["documentation", "project", "practice", "tutorial", "build", "example", "feedback"], "ideal": "Explain a concrete approach (official docs, a small hands-on project, asking for feedback) and illustrate it with a recent example and the outcome."},
+    {"question": "Where do you see yourself in the next three to five years, and how does this role fit into that plan?", "keywords": ["goal", "grow", "skills", "role", "contribute", "learn", "responsibility"], "ideal": "Show a realistic growth path connected to this role: skills you want to deepen, responsibilities you want to take on, and how you will contribute to the company along the way."}
+  ],
+  "skills": {
+    "Python": [
+      {"question": "What is the difference between a list and a tuple in Python, and when would you use each?", "difficulty": "easy", "keywords": ["mutable", "immutable", "hashable", "dictionary key", "performance", "fixed"], "ideal": "Lists are mutable and suited to collections that change; tuples are immutable, hashable (usable as dict keys/set members when their items are), slightly faster, and signal fixed records."},
+      {"question": "Explain decorators and generators in Python with an example use case for each.", "difficulty": "medium", "keywords": ["decorator", "wrap", "function", "generator", "yield", "lazy", "memory", "iterator"], "ideal": "A decorator wraps a function to add behaviour (logging, caching, auth) without changing it. A generator uses yield to produce values lazily, saving memory for large or infinite sequences such as reading a big file line by line."},
+      {"question": "What is the GIL in CPython and how does it affect multithreading versus multiprocessing?", "difficulty": "hard", "keywords": ["global interpreter lock", "thread", "cpu-bound", "io-bound", "multiprocessing", "asyncio", "parallel"], "ideal": "The Global Interpreter Lock lets only one thread execute Python bytecode at a time, so threads help I/O-bound work but not CPU-bound work; use multiprocessing (or native extensions) for CPU-bound parallelism and asyncio for many concurrent I/O tasks."}
+    ],
+    "Java": [
+      {"question": "What is the difference between an abstract class and an interface in Java?", "difficulty": "easy", "keywords": ["abstract", "interface", "multiple inheritance", "default method", "state", "constructor", "implements", "extends"], "ideal": "An abstract class can hold state, constructors and implemented methods, and a class can extend only one. Interfaces define contracts, can have default/static methods, no instance state, and a class can implement many."},
+      {"question": "How do HashMap internals work and what changed in Java 8?", "difficulty": "medium", "keywords": ["hash", "bucket", "equals", "hashcode", "collision", "linked list", "tree", "load factor", "resize"], "ideal": "Keys are hashed to buckets; collisions are chained. equals/hashCode must be consistent. When the load factor is exceeded the table resizes. Since Java 8, long chains convert to balanced red-black trees, improving worst-case lookup to O(log n)."},
+      {"question": "Explain how garbage collection works in the JVM.", "difficulty": "hard", "keywords": ["heap", "young generation", "old generation", "reachable", "mark", "sweep", "g1", "stop the world"], "ideal": "The JVM reclaims objects that are no longer reachable from GC roots. The heap is split into young and old generations; most objects die young and are collected cheaply. Collectors like G1/ZGC use marking, compaction and region-based collection to reduce stop-the-world pauses."}
+    ],
+    "JavaScript": [
+      {"question": "What is a closure in JavaScript? Give a practical example.", "difficulty": "easy", "keywords": ["function", "scope", "outer", "variable", "lexical", "private", "counter"], "ideal": "A closure is a function that remembers variables from its lexical (outer) scope even after that scope has returned, e.g. a counter factory or keeping private state in a module."},
+      {"question": "Explain the event loop and the difference between the microtask and macrotask queues.", "difficulty": "medium", "keywords": ["call stack", "event loop", "promise", "microtask", "settimeout", "macrotask", "callback", "non-blocking"], "ideal": "JavaScript runs on a single call stack. When it is empty the event loop first drains the microtask queue (promise callbacks, queueMicrotask) and then takes the next macrotask (setTimeout, I/O, events). That is why a resolved promise runs before a setTimeout of 0."},
+      {"question": "What is the difference between == and ===, and between var, let and const?", "difficulty": "easy", "keywords": ["type coercion", "strict", "block scope", "function scope", "hoisting", "reassign", "temporal dead zone"], "ideal": "== compares after type coercion while === compares value and type. var is function-scoped and hoisted as undefined; let and const are block-scoped with a temporal dead zone, and const cannot be reassigned."}
+    ],
+    "TypeScript": [
+      {"question": "What benefits does TypeScript bring over JavaScript, and what are generics used for?", "difficulty": "medium", "keywords": ["type safety", "compile time", "autocomplete", "refactor", "generic", "reusable", "interface"], "ideal": "TypeScript catches type errors at compile time, improves editor autocomplete and safe refactoring. Generics let you write reusable functions and types that keep type information, such as a typed API response wrapper."}
+    ],
+    "C": [
+      {"question": "Explain pointers in C and the difference between stack and heap memory.", "difficulty": "medium", "keywords": ["address", "pointer", "dereference", "stack", "heap", "malloc", "free", "memory leak"], "ideal": "A pointer stores a memory address and is dereferenced to access the value. Stack memory is automatic and freed when the function returns; heap memory is allocated with malloc and must be released with free, otherwise you leak memory."}
+    ],
+    "C++": [
+      {"question": "What is RAII and how do smart pointers help manage memory in modern C++?", "difficulty": "medium", "keywords": ["raii", "destructor", "scope", "unique_ptr", "shared_ptr", "ownership", "leak", "exception"], "ideal": "RAII ties a resource's lifetime to an object's scope so the destructor releases it, even when exceptions occur. unique_ptr expresses sole ownership, shared_ptr shared ownership via reference counting, avoiding manual delete and leaks."},
+      {"question": "What are virtual functions and how does dynamic dispatch work?", "difficulty": "medium", "keywords": ["virtual", "override", "vtable", "polymorphism", "base class", "runtime", "pointer"], "ideal": "Virtual functions let a base-class pointer or reference call the derived class override at runtime. The compiler typically implements this with a vtable per class and a vptr in each object."}
+    ],
+    "C#": [
+      {"question": "What is the difference between value types and reference types in C#, and how does async/await work?", "difficulty": "medium", "keywords": ["struct", "class", "stack", "heap", "copy", "reference", "task", "await", "non-blocking"], "ideal": "Value types (structs) are copied by value; reference types (classes) are passed by reference to a heap object. async/await lets methods return a Task and resume when the awaited work finishes without blocking the thread."}
+    ],
+    "Go": [
+      {"question": "How do goroutines and channels support concurrency in Go?", "difficulty": "medium", "keywords": ["goroutine", "lightweight", "channel", "communicate", "select", "buffered", "sync", "waitgroup"], "ideal": "Goroutines are lightweight threads managed by the Go runtime. Channels pass data between them safely ('share memory by communicating'); select waits on multiple channels and sync primitives like WaitGroup coordinate completion."}
+    ],
+    "SQL": [
+      {"question": "Explain the different types of JOINs in SQL with an example.", "difficulty": "easy", "keywords": ["inner join", "left join", "right join", "full outer", "matching", "null", "rows"], "ideal": "INNER JOIN returns only matching rows; LEFT JOIN returns all left rows with NULLs when there is no match; RIGHT JOIN the reverse; FULL OUTER JOIN returns all rows from both sides. Example: customers LEFT JOIN orders to find customers without orders."},
+      {"question": "What is an index, how does it speed up queries, and what are its downsides?", "difficulty": "medium", "keywords": ["b-tree", "lookup", "scan", "write", "storage", "composite", "selectivity", "explain"], "ideal": "An index (usually a B-tree) lets the database find rows without a full table scan. Downsides are extra storage and slower inserts/updates. Choose columns used in WHERE/JOIN/ORDER BY, consider composite index column order, and verify with EXPLAIN."},
+      {"question": "Write or describe a query to find the second highest salary in an employees table.", "difficulty": "medium", "keywords": ["order by", "limit", "offset", "max", "subquery", "dense_rank", "distinct"], "ideal": "Options: SELECT MAX(salary) FROM employees WHERE salary < (SELECT MAX(salary) FROM employees); or use DENSE_RANK() OVER (ORDER BY salary DESC) and filter rank = 2, or ORDER BY salary DESC with DISTINCT and LIMIT 1 OFFSET 1."},
+      {"question": "What is database normalization and when might you denormalize?", "difficulty": "medium", "keywords": ["redundancy", "1nf", "2nf", "3nf", "anomaly", "denormalize", "read performance", "join"], "ideal": "Normalization organises tables (1NF, 2NF, 3NF) to remove redundancy and update anomalies. You might denormalize for read-heavy workloads or analytics to avoid expensive joins, accepting duplication and extra write complexity."}
+    ],
+    "Data Structures & Algorithms": [
+      {"question": "What is the difference between an array and a linked list? When would you use each?", "difficulty": "easy", "keywords": ["contiguous", "index", "o(1)", "insertion", "deletion", "pointer", "cache", "dynamic"], "ideal": "Arrays store elements contiguously, giving O(1) index access and good cache locality but costly inserts in the middle. Linked lists allow O(1) insertion/deletion at a known node but O(n) access and extra pointer memory."},
+      {"question": "How would you detect a cycle in a linked list? What is the time and space complexity?", "difficulty": "medium", "keywords": ["floyd", "slow", "fast", "pointer", "o(n)", "o(1)", "hash set"], "ideal": "Use Floyd's tortoise and hare: move a slow pointer one step and a fast pointer two steps; if they meet there is a cycle. O(n) time and O(1) space. A hash set of visited nodes also works with O(n) space."},
+      {"question": "Explain dynamic programming and solve or describe an approach for the coin change problem.", "difficulty": "hard", "keywords": ["overlapping subproblems", "optimal substructure", "memoization", "tabulation", "dp array", "minimum", "o(n*m)"], "ideal": "DP applies when a problem has overlapping subproblems and optimal substructure. For minimum coins, build dp[0..amount] with dp[0]=0 and dp[x]=min(dp[x-coin]+1) over coins, giving O(amount x coins) time."},
+      {"question": "Compare BFS and DFS. When would you prefer each?", "difficulty": "medium", "keywords": ["queue", "stack", "recursion", "shortest path", "level", "unweighted", "memory", "topological"], "ideal": "BFS uses a queue and explores level by level, finding shortest paths in unweighted graphs. DFS uses a stack or recursion, uses less memory on wide graphs, and suits cycle detection, topological sort and exploring all paths."}
+    ],
+    "OOP": [
+      {"question": "Explain the four pillars of object-oriented programming with examples.", "difficulty": "easy", "keywords": ["encapsulation", "abstraction", "inheritance", "polymorphism", "class", "object", "example"], "ideal": "Encapsulation hides internal state behind methods; abstraction exposes only essential behaviour; inheritance reuses and extends a base class; polymorphism lets one interface have many implementations, e.g. Shape.area() for Circle and Square."}
+    ],
+    "System Design": [
+      {"question": "How would you design a URL shortener like bit.ly?", "difficulty": "hard", "keywords": ["hash", "base62", "database", "cache", "redirect", "scalability", "collision", "analytics", "load balancer"], "ideal": "Generate short codes with base62 encoding of an ID or a hash with collision checks, store mappings in a key-value/SQL store, serve redirects (301/302) through a cache like Redis behind load balancers, and process click analytics asynchronously."},
+      {"question": "What is caching, where would you place caches in a web system, and how do you handle invalidation?", "difficulty": "medium", "keywords": ["cache", "cdn", "redis", "ttl", "invalidation", "write-through", "cache-aside", "stale"], "ideal": "Caches store frequently read data closer to the consumer: browser, CDN, application (Redis) and database caches. Use cache-aside or write-through patterns, TTLs, and explicit invalidation on writes, accepting some staleness where safe."}
+    ],
+    "Operating Systems": [
+      {"question": "What is the difference between a process and a thread? What is a deadlock?", "difficulty": "medium", "keywords": ["memory", "address space", "shared", "context switch", "deadlock", "mutual exclusion", "circular wait", "hold and wait"], "ideal": "A process has its own address space; threads share their process's memory and are cheaper to switch. Deadlock is when processes wait on each other forever; it requires mutual exclusion, hold and wait, no preemption and circular wait."}
+    ],
+    "Git": [
+      {"question": "What is the difference between git merge and git rebase? How do you resolve a merge conflict?", "difficulty": "easy", "keywords": ["merge commit", "history", "linear", "rebase", "conflict", "markers", "shared branch", "commit"], "ideal": "Merge combines branches with a merge commit, preserving history; rebase replays commits on top of another branch for a linear history but should not be used on shared branches. To resolve conflicts, edit the conflict markers, test, stage and commit."}
+    ],
+    "Linux": [
+      {"question": "How would you find which process is using the most CPU or memory on a Linux server and stop it safely?", "difficulty": "easy", "keywords": ["top", "htop", "ps", "kill", "sigterm", "sigkill", "pid", "systemctl"], "ideal": "Use top/htop or ps aux --sort=-%cpu to find the PID, inspect it, then stop it gracefully with kill (SIGTERM) or systemctl stop for a service, using SIGKILL only as a last resort."}
+    ],
+    "HTML": [
+      {"question": "What is semantic HTML and why does it matter for accessibility and SEO?", "difficulty": "easy", "keywords": ["semantic", "header", "nav", "article", "screen reader", "accessibility", "seo", "alt"], "ideal": "Semantic HTML uses elements that describe meaning (header, nav, main, article, button) instead of generic divs. Screen readers and search engines understand the structure better; add alt text and labels for accessibility."}
+    ],
+    "CSS": [
+      {"question": "Explain the CSS box model and the difference between Flexbox and Grid.", "difficulty": "easy", "keywords": ["content", "padding", "border", "margin", "box-sizing", "flexbox", "one-dimensional", "grid", "two-dimensional"], "ideal": "Every element is a box of content, padding, border and margin; box-sizing: border-box includes padding and border in the width. Flexbox lays out items in one dimension (row or column); Grid handles two-dimensional layouts with rows and columns."}
+    ],
+    "React": [
+      {"question": "What are React hooks? Explain useState and useEffect and a common mistake with useEffect.", "difficulty": "medium", "keywords": ["hook", "usestate", "useeffect", "dependency array", "side effect", "cleanup", "infinite loop", "render"], "ideal": "Hooks let function components use state and lifecycle features. useState holds local state; useEffect runs side effects after render. A common mistake is a missing or wrong dependency array causing stale values or infinite loops; return a cleanup function for subscriptions."},
+      {"question": "How does React decide when to re-render, and how can you prevent unnecessary re-renders?", "difficulty": "hard", "keywords": ["state", "props", "virtual dom", "reconciliation", "memo", "usememo", "usecallback", "key"], "ideal": "A component re-renders when its state, props or context change, or when its parent re-renders. React reconciles the virtual DOM and updates only changed nodes. Use React.memo, useMemo, useCallback, stable keys and state colocation to avoid wasted renders."}
+    ],
+    "Angular": [
+      {"question": "What is dependency injection in Angular and how do services and observables fit in?", "difficulty": "medium", "keywords": ["dependency injection", "service", "injectable", "provider", "singleton", "observable", "rxjs", "subscribe"], "ideal": "Angular's injector creates and provides services (marked @Injectable) to components, often as singletons. Services encapsulate logic like HTTP calls that return RxJS Observables, which components subscribe to or bind with the async pipe."}
+    ],
+    "Node.js": [
+      {"question": "How does Node.js handle many concurrent requests with a single thread?", "difficulty": "medium", "keywords": ["event loop", "non-blocking", "libuv", "thread pool", "async", "callback", "cpu-bound", "worker"], "ideal": "Node uses an event loop with non-blocking I/O; libuv delegates I/O to the OS or a thread pool and calls back when ready, so one thread serves many connections. CPU-heavy work blocks the loop and should go to worker threads or separate services."}
+    ],
+    "REST APIs": [
+      {"question": "What makes an API RESTful? Explain HTTP methods and common status codes.", "difficulty": "easy", "keywords": ["resource", "stateless", "get", "post", "put", "delete", "200", "201", "400", "404", "500"], "ideal": "REST models resources with URLs and uses standard HTTP methods: GET read, POST create, PUT/PATCH update, DELETE remove. It is stateless. Status codes: 200 OK, 201 Created, 400 Bad Request, 401/403 auth errors, 404 Not Found, 500 Server Error."},
+      {"question": "How would you secure and version a public REST API?", "difficulty": "medium", "keywords": ["authentication", "jwt", "oauth", "https", "rate limiting", "validation", "versioning", "v1"], "ideal": "Use HTTPS, authenticate with OAuth2/JWT or API keys, authorise per resource, validate input, rate-limit, log and monitor. Version via the URL (/v1/) or headers and deprecate old versions with notice."}
+    ],
+    "Django": [
+      {"question": "Explain Django's MVT architecture and how the ORM helps prevent SQL injection.", "difficulty": "medium", "keywords": ["model", "view", "template", "url", "orm", "parameterized", "queryset", "migration"], "ideal": "Models define data, views hold request logic and templates render output, wired by URL routing. The ORM builds parameterised queries from QuerySets, so user input is escaped, preventing SQL injection; migrations track schema changes."}
+    ],
+    "Spring Boot": [
+      {"question": "What does Spring Boot auto-configuration do, and how does dependency injection work in Spring?", "difficulty": "medium", "keywords": ["auto configuration", "starter", "bean", "component", "autowired", "constructor injection", "application context"], "ideal": "Auto-configuration configures beans based on the classpath and properties (via starters), reducing boilerplate. Spring's application context creates beans (@Component, @Service) and injects dependencies, preferably via constructor injection."}
+    ],
+    "Docker": [
+      {"question": "What is the difference between a Docker image and a container? How would you reduce image size?", "difficulty": "easy", "keywords": ["image", "container", "layer", "instance", "multi-stage", "alpine", "slim", "dockerignore"], "ideal": "An image is a read-only layered template; a container is a running instance of it with a writable layer. Reduce size with slim/alpine base images, multi-stage builds, combining layers, cleaning caches and a .dockerignore."}
+    ],
+    "Kubernetes": [
+      {"question": "Explain Pods, Deployments and Services in Kubernetes.", "difficulty": "medium", "keywords": ["pod", "container", "deployment", "replica", "rolling update", "service", "load balance", "selector"], "ideal": "A Pod is the smallest unit, wrapping one or more containers. A Deployment manages replicated Pods with rolling updates and rollbacks. A Service gives a stable network endpoint and load-balances traffic to Pods selected by labels."}
+    ],
+    "CI/CD": [
+      {"question": "Describe a CI/CD pipeline you would set up for a web application.", "difficulty": "medium", "keywords": ["commit", "build", "test", "lint", "artifact", "deploy", "staging", "production", "rollback"], "ideal": "On every commit/PR: install, lint, run unit tests, build an artifact or Docker image, run integration tests, deploy to staging automatically, then promote to production with approvals or canary releases and an easy rollback."}
+    ],
+    "AWS": [
+      {"question": "Which AWS services would you use to host a scalable web application and why?", "difficulty": "medium", "keywords": ["ec2", "elastic load balancer", "auto scaling", "rds", "s3", "cloudfront", "iam", "vpc"], "ideal": "Run the app on EC2 in an Auto Scaling group (or ECS/Lambda) behind an Elastic Load Balancer, store data in RDS or DynamoDB, static files in S3 served via CloudFront, isolate resources in a VPC, and grant least-privilege access with IAM."}
+    ],
+    "Terraform": [
+      {"question": "What is Infrastructure as Code and how does Terraform state work?", "difficulty": "medium", "keywords": ["declarative", "version control", "plan", "apply", "state", "remote backend", "lock", "drift"], "ideal": "IaC defines infrastructure in versioned, reviewable code. Terraform compares the desired configuration with its state file to plan changes, then applies them. Store state in a remote backend with locking so teams do not corrupt it, and detect drift with plan."}
+    ],
+    "Machine Learning": [
+      {"question": "What is overfitting and how do you prevent it?", "difficulty": "easy", "keywords": ["training", "test", "generalize", "cross validation", "regularization", "more data", "dropout", "early stopping"], "ideal": "Overfitting is when a model learns noise in training data and fails to generalise. Prevent it with more data, simpler models, regularisation (L1/L2), cross-validation, early stopping, dropout and feature selection."},
+      {"question": "Explain the bias-variance trade-off.", "difficulty": "medium", "keywords": ["bias", "variance", "underfitting", "overfitting", "complexity", "error", "generalization"], "ideal": "Bias is error from overly simple assumptions (underfitting); variance is sensitivity to training data (overfitting). Increasing model complexity lowers bias but raises variance; the goal is the complexity that minimises total generalisation error."},
+      {"question": "How would you evaluate a classification model on an imbalanced dataset?", "difficulty": "medium", "keywords": ["precision", "recall", "f1", "confusion matrix", "roc", "pr auc", "accuracy", "threshold"], "ideal": "Accuracy is misleading; use the confusion matrix, precision, recall, F1 and PR-AUC (or ROC-AUC), choose a decision threshold based on business cost, and use stratified cross-validation."}
+    ],
+    "Deep Learning": [
+      {"question": "Explain how backpropagation and gradient descent train a neural network.", "difficulty": "medium", "keywords": ["forward pass", "loss", "gradient", "chain rule", "weights", "learning rate", "backpropagation", "optimizer"], "ideal": "A forward pass computes predictions and the loss; backpropagation applies the chain rule to compute the gradient of the loss with respect to each weight; gradient descent (or Adam) updates the weights opposite the gradient, scaled by the learning rate."},
+      {"question": "What problem does the attention mechanism in Transformers solve?", "difficulty": "hard", "keywords": ["attention", "long-range", "parallel", "query", "key", "value", "rnn", "context"], "ideal": "Attention lets every token weigh every other token directly via query-key-value scores, capturing long-range dependencies that RNNs struggle with, and allows parallel training instead of sequential processing."}
+    ],
+    "Statistics": [
+      {"question": "What is a p-value and how would you explain hypothesis testing to a non-technical stakeholder?", "difficulty": "medium", "keywords": ["null hypothesis", "probability", "significance", "0.05", "evidence", "sample", "chance"], "ideal": "A p-value is the probability of seeing results at least as extreme as observed if the null hypothesis were true. Low values (e.g. below 0.05) suggest the effect is unlikely to be due to chance alone; it is not the probability the hypothesis is true."},
+      {"question": "What is the difference between correlation and causation? Give an example.", "difficulty": "easy", "keywords": ["correlation", "causation", "confounding", "experiment", "randomized", "example"], "ideal": "Correlation means two variables move together; causation means one changes the other. A confounder can create correlation, e.g. ice cream sales and drownings both rise in summer. Randomised experiments establish causation."}
+    ],
+    "Data Analysis": [
+      {"question": "Walk me through how you clean and explore a new dataset before analysis.", "difficulty": "easy", "keywords": ["missing values", "duplicates", "outliers", "data types", "distribution", "summary statistics", "visualize", "validate"], "ideal": "Check structure and data types, handle missing values and duplicates, detect outliers, standardise formats, compute summary statistics, visualise distributions and relationships, and validate findings with domain experts."}
+    ],
+    "Excel": [
+      {"question": "How would you use Excel to summarise a large sales dataset by region and month?", "difficulty": "easy", "keywords": ["pivot table", "sumifs", "xlookup", "chart", "filter", "conditional formatting", "table"], "ideal": "Convert data to a table, build a pivot table with region and month as rows/columns and sum of sales as values, use SUMIFS/XLOOKUP for custom metrics, add slicers and charts, and highlight insights with conditional formatting."}
+    ],
+    "Power BI": [
+      {"question": "What is the difference between a calculated column and a measure in Power BI?", "difficulty": "medium", "keywords": ["dax", "row context", "filter context", "measure", "calculated column", "storage", "aggregation"], "ideal": "Calculated columns are computed row by row at refresh and stored in the model; measures are DAX expressions evaluated at query time in the current filter context, ideal for aggregations like total sales, and they save memory."}
+    ],
+    "Tableau": [
+      {"question": "How would you design an effective dashboard in Tableau for executives?", "difficulty": "medium", "keywords": ["kpi", "audience", "filter", "calculated field", "simple", "trend", "drill down", "story"], "ideal": "Start from the executive's questions, highlight a few KPIs at the top, show trends and comparisons with simple charts, add filters and drill-downs, use calculated fields for metrics, keep design consistent, and tell a clear story."}
+    ],
+    "Pandas": [
+      {"question": "How do you handle missing data and combine DataFrames in pandas?", "difficulty": "easy", "keywords": ["isnull", "dropna", "fillna", "merge", "join", "concat", "groupby", "interpolate"], "ideal": "Detect with isnull().sum(), then drop with dropna or impute with fillna/interpolate depending on context. Combine with merge/join on keys (inner/left/outer) or concat to stack, then aggregate with groupby."}
+    ],
+    "NLP": [
+      {"question": "Explain tokenization and word embeddings. How are modern contextual embeddings different?", "difficulty": "medium", "keywords": ["token", "subword", "embedding", "vector", "word2vec", "context", "bert", "semantic"], "ideal": "Tokenization splits text into units (words or subwords). Embeddings map tokens to dense vectors capturing meaning (word2vec, GloVe). Contextual embeddings from models like BERT give a different vector for the same word depending on its sentence context."}
+    ],
+    "Computer Vision": [
+      {"question": "Why are convolutional neural networks well suited to images?", "difficulty": "medium", "keywords": ["convolution", "filter", "feature", "parameter sharing", "pooling", "spatial", "translation"], "ideal": "Convolutions apply small learnable filters across the image, sharing parameters and preserving spatial structure; stacked layers learn edges, textures and then objects, and pooling adds some translation invariance with fewer parameters."}
+    ],
+    "Generative AI": [
+      {"question": "What is Retrieval-Augmented Generation (RAG) and why is it used?", "difficulty": "medium", "keywords": ["retrieval", "embedding", "vector database", "context", "hallucination", "chunk", "up to date", "grounding"], "ideal": "RAG retrieves relevant document chunks (usually via embeddings in a vector store) and passes them to the LLM as context, grounding answers in private or up-to-date data and reducing hallucinations without retraining the model."},
+      {"question": "How would you evaluate whether an LLM-powered feature is working well?", "difficulty": "hard", "keywords": ["evaluation", "test set", "metrics", "human review", "llm judge", "regression", "latency", "cost"], "ideal": "Build a representative test set of inputs with expected behaviour, score outputs with automated checks, human review and LLM-as-judge rubrics, track latency and cost, and rerun the eval on every prompt or model change to catch regressions."}
+    ],
+    "MLOps": [
+      {"question": "What is MLOps and what does a production ML pipeline include?", "difficulty": "medium", "keywords": ["pipeline", "versioning", "training", "deployment", "monitoring", "drift", "reproducibility", "ci/cd"], "ideal": "MLOps applies DevOps practices to ML: versioned data and models, automated training pipelines, experiment tracking, CI/CD for models, deployment and serving, and monitoring for performance and drift with retraining triggers."}
+    ],
+    "Big Data": [
+      {"question": "Why is Spark faster than classic Hadoop MapReduce, and what is a partition?", "difficulty": "medium", "keywords": ["in-memory", "dag", "lazy evaluation", "partition", "parallel", "shuffle", "disk"], "ideal": "Spark keeps intermediate data in memory and optimises a DAG of lazily evaluated transformations, while MapReduce writes to disk between steps. A partition is a chunk of data processed in parallel by an executor; poor partitioning causes skew and expensive shuffles."}
+    ],
+    "Data Engineering": [
+      {"question": "What is the difference between ETL and ELT, and between a data warehouse and a data lake?", "difficulty": "medium", "keywords": ["extract", "transform", "load", "warehouse", "lake", "structured", "raw", "schema"], "ideal": "ETL transforms data before loading; ELT loads raw data first and transforms inside the warehouse. A warehouse stores structured, modelled data for analytics with schema-on-write; a lake stores raw data of any format cheaply with schema-on-read."}
+    ],
+    "MongoDB": [
+      {"question": "When would you choose MongoDB over a relational database?", "difficulty": "medium", "keywords": ["document", "schema", "flexible", "json", "scale", "joins", "transactions", "embedded"], "ideal": "Choose MongoDB for flexible or evolving document schemas, nested JSON-like data read together, and horizontal scaling. Prefer relational databases for complex joins, strong relational integrity and multi-table transactions."}
+    ],
+    "Database Design": [
+      {"question": "What are ACID properties of a transaction?", "difficulty": "easy", "keywords": ["atomicity", "consistency", "isolation", "durability", "transaction", "commit", "rollback"], "ideal": "Atomicity: all or nothing. Consistency: data moves between valid states. Isolation: concurrent transactions do not interfere. Durability: committed data survives crashes."}
+    ],
+    "Networking": [
+      {"question": "What happens when you type a URL into a browser and press Enter?", "difficulty": "medium", "keywords": ["dns", "ip", "tcp", "handshake", "tls", "http", "request", "response", "render"], "ideal": "The browser resolves the domain via DNS, opens a TCP connection (three-way handshake), negotiates TLS for HTTPS, sends an HTTP request, the server responds, and the browser parses HTML, fetches resources and renders the page."},
+      {"question": "What is the difference between TCP and UDP? Give use cases for each.", "difficulty": "easy", "keywords": ["connection", "reliable", "ordered", "handshake", "udp", "fast", "streaming", "dns", "gaming"], "ideal": "TCP is connection-oriented, reliable and ordered (web, email, file transfer). UDP is connectionless and faster without delivery guarantees (video calls, gaming, DNS, streaming)."}
+    ],
+    "Network Security": [
+      {"question": "Explain the CIA triad and defence in depth.", "difficulty": "easy", "keywords": ["confidentiality", "integrity", "availability", "layers", "firewall", "encryption", "access control", "monitoring"], "ideal": "The CIA triad is confidentiality, integrity and availability. Defence in depth layers multiple controls such as firewalls, network segmentation, MFA, encryption, endpoint protection and monitoring, so one failure does not lead to compromise."}
+    ],
+    "Ethical Hacking": [
+      {"question": "Explain SQL injection and XSS and how to prevent them.", "difficulty": "medium", "keywords": ["sql injection", "parameterized", "prepared statement", "xss", "escape", "sanitize", "csp", "input validation"], "ideal": "SQL injection inserts malicious SQL through unsanitised input; prevent it with parameterised queries/prepared statements and least-privilege DB users. XSS injects scripts into pages; prevent it with output encoding, input validation and a Content Security Policy."},
+      {"question": "What are the phases of a penetration test?", "difficulty": "medium", "keywords": ["scope", "reconnaissance", "scanning", "exploitation", "privilege escalation", "post-exploitation", "report", "authorization"], "ideal": "Agree scope and written authorisation, perform reconnaissance, scan and enumerate, exploit vulnerabilities, escalate privileges and assess impact, clean up, and deliver a report with risk ratings and remediation steps."}
+    ],
+    "Cryptography": [
+      {"question": "What is the difference between symmetric and asymmetric encryption, and how does hashing differ from encryption?", "difficulty": "medium", "keywords": ["symmetric", "asymmetric", "public key", "private key", "aes", "rsa", "hash", "one-way", "salt"], "ideal": "Symmetric encryption (AES) uses one shared key and is fast; asymmetric (RSA/ECC) uses a public/private key pair for key exchange and signatures. Hashing is one-way and not reversible; passwords should be hashed with a salt using bcrypt/argon2."}
+    ],
+    "SIEM": [
+      {"question": "How does a SIEM help a security team and how would you triage an alert?", "difficulty": "medium", "keywords": ["logs", "correlation", "alert", "triage", "false positive", "context", "escalate", "playbook"], "ideal": "A SIEM collects and correlates logs from many sources to detect threats and alert. To triage: verify the alert, gather context (user, host, timeline), check for false positives, determine severity, follow the playbook and escalate or contain."}
+    ],
+    "Incident Response": [
+      {"question": "What are the phases of incident response?", "difficulty": "easy", "keywords": ["preparation", "identification", "containment", "eradication", "recovery", "lessons learned"], "ideal": "Preparation, identification/detection, containment, eradication, recovery and lessons learned (post-incident review), as in the NIST/SANS frameworks."}
+    ],
+    "Software Testing": [
+      {"question": "What is the difference between unit, integration and end-to-end tests? How do you decide what to test?", "difficulty": "easy", "keywords": ["unit", "integration", "end-to-end", "pyramid", "risk", "coverage", "fast", "isolated"], "ideal": "Unit tests check small pieces in isolation and are fast; integration tests check components together; end-to-end tests simulate real user flows. Follow the test pyramid and prioritise by risk and critical user journeys."},
+      {"question": "How would you write test cases for a login page?", "difficulty": "easy", "keywords": ["valid", "invalid", "boundary", "empty", "lockout", "security", "sql injection", "usability"], "ideal": "Cover valid login, wrong password, unknown user, empty fields, boundary lengths, special characters, account lockout after failures, password masking, SQL injection/XSS attempts, session handling and accessibility."}
+    ],
+    "Test Automation": [
+      {"question": "What is the Page Object Model and why is it used in UI automation?", "difficulty": "medium", "keywords": ["page object", "locator", "maintainability", "reuse", "abstraction", "duplication"], "ideal": "The Page Object Model wraps each page's locators and actions in a class, so tests call high-level methods. It reduces duplication and makes tests easier to maintain when the UI changes."}
+    ],
+    "Figma": [
+      {"question": "How do you use components, variants and auto layout in Figma to build scalable designs?", "difficulty": "medium", "keywords": ["component", "instance", "variant", "auto layout", "design system", "consistency", "tokens"], "ideal": "Create reusable main components with variants for states (default, hover, disabled), use instances across designs, apply auto layout so frames resize responsively, and centralise colours and type as styles/variables for a consistent design system."}
+    ],
+    "UI Design": [
+      {"question": "What principles do you follow to create a clear visual hierarchy in an interface?", "difficulty": "easy", "keywords": ["hierarchy", "size", "contrast", "spacing", "typography", "alignment", "color", "consistency"], "ideal": "Use size, weight and contrast to signal importance, consistent spacing and alignment on a grid, a limited typographic scale and colour palette, whitespace to group related items, and accessible contrast ratios."}
+    ],
+    "UX Research": [
+      {"question": "How would you plan and run a usability test?", "difficulty": "medium", "keywords": ["goal", "participants", "tasks", "think aloud", "observe", "metrics", "synthesis", "insights"], "ideal": "Define goals and research questions, recruit 5-8 representative participants, write realistic tasks, ask them to think aloud while you observe without leading, record success rates and pain points, then synthesise findings into prioritised insights."}
+    ],
+    "Wireframing": [
+      {"question": "When do you use low-fidelity versus high-fidelity prototypes?", "difficulty": "easy", "keywords": ["low fidelity", "high fidelity", "early", "iterate", "feedback", "interaction", "handoff", "cost"], "ideal": "Low-fidelity wireframes are quick and cheap for exploring layout and flow early and getting feedback. High-fidelity prototypes test detailed interactions and visuals and are used for usability testing and developer handoff."}
+    ],
+    "Product Management": [
+      {"question": "How do you define success metrics for a new feature?", "difficulty": "medium", "keywords": ["goal", "north star", "kpi", "adoption", "retention", "baseline", "guardrail", "experiment"], "ideal": "Tie the feature to a product goal, choose a primary metric (e.g. adoption or retention), supporting and guardrail metrics, measure the baseline, set targets, and validate with an experiment or staged rollout."},
+      {"question": "How would you prioritise a backlog with limited engineering capacity?", "difficulty": "medium", "keywords": ["impact", "effort", "rice", "moscow", "value", "strategy", "data", "stakeholders"], "ideal": "Align with strategy, estimate value and effort using frameworks like RICE or MoSCoW, use data and user research, consider dependencies and risk, review with stakeholders, and communicate what is not being done and why."}
+    ],
+    "Agile": [
+      {"question": "Explain the Scrum framework: roles, events and artifacts.", "difficulty": "easy", "keywords": ["product owner", "scrum master", "team", "sprint", "planning", "standup", "review", "retrospective", "backlog"], "ideal": "Roles: Product Owner, Scrum Master and Developers. Events: sprint, sprint planning, daily scrum, sprint review and retrospective. Artifacts: product backlog, sprint backlog and the increment."}
+    ],
+    "Requirements Gathering": [
+      {"question": "What techniques do you use to gather requirements and how do you write a good user story?", "difficulty": "easy", "keywords": ["interview", "workshop", "observation", "user story", "as a", "so that", "acceptance criteria", "invest"], "ideal": "Use stakeholder interviews, workshops, observation, surveys and document analysis. Write stories as 'As a <user>, I want <goal> so that <benefit>' with clear acceptance criteria, following INVEST."}
+    ],
+    "Communication": [
+      {"question": "How would you explain a complex technical concept to a non-technical audience?", "difficulty": "easy", "keywords": ["audience", "analogy", "simple", "example", "visual", "check understanding", "jargon"], "ideal": "Understand the audience and what they need, avoid jargon, use an analogy and a concrete example or visual, focus on impact rather than internals, and check understanding by inviting questions."}
+    ],
+    "SEO": [
+      {"question": "What is the difference between on-page and off-page SEO, and how would you improve a page's ranking?", "difficulty": "easy", "keywords": ["keyword", "title", "meta", "content", "backlink", "speed", "mobile", "internal links"], "ideal": "On-page SEO covers content quality, keywords, titles, meta descriptions, headings, internal links, speed and mobile-friendliness. Off-page SEO is mainly authoritative backlinks and brand signals. Improve by matching search intent and fixing technical issues."}
+    ],
+    "Social Media Marketing": [
+      {"question": "How would you grow engagement for a brand's social media account?", "difficulty": "easy", "keywords": ["audience", "content calendar", "consistency", "engagement", "analytics", "reels", "community", "experiment"], "ideal": "Understand the audience, define content pillars and a consistent calendar, use formats that perform (short video, carousels), engage with the community, collaborate with creators, and review analytics to double down on what works."}
+    ],
+    "Digital Advertising": [
+      {"question": "Explain CTR, CPC, CPA and ROAS. How would you improve a campaign with high CPC?", "difficulty": "medium", "keywords": ["ctr", "cpc", "cpa", "roas", "quality score", "targeting", "ad copy", "landing page", "a/b test"], "ideal": "CTR is clicks/impressions, CPC cost per click, CPA cost per acquisition and ROAS revenue per ad spend. To cut CPC, improve relevance and quality score with better targeting, keywords and ad copy, A/B test creatives and improve the landing page."}
+    ],
+    "Financial Modeling": [
+      {"question": "Walk me through a DCF valuation.", "difficulty": "medium", "keywords": ["free cash flow", "forecast", "discount rate", "wacc", "terminal value", "present value", "enterprise value", "sensitivity"], "ideal": "Forecast free cash flows for 5-10 years, estimate a terminal value, discount everything at WACC to present value to get enterprise value, subtract net debt for equity value, and run sensitivity analysis on key assumptions."}
+    ],
+    "Accounting": [
+      {"question": "How are the three financial statements connected?", "difficulty": "medium", "keywords": ["income statement", "balance sheet", "cash flow", "net income", "retained earnings", "depreciation", "working capital"], "ideal": "Net income from the income statement starts the cash flow statement and flows into retained earnings on the balance sheet. Non-cash items like depreciation and changes in working capital adjust cash flow, and ending cash appears on the balance sheet."}
+    ],
+    "Embedded C": [
+      {"question": "What does the volatile keyword do in embedded C and when is it needed?", "difficulty": "medium", "keywords": ["volatile", "optimization", "register", "interrupt", "hardware", "memory-mapped", "compiler"], "ideal": "volatile tells the compiler a variable may change outside the normal program flow, so it must be read from memory each time. It is needed for memory-mapped hardware registers, variables shared with ISRs, and multi-threaded flags."}
+    ],
+    "Microcontrollers": [
+      {"question": "Compare UART, I2C and SPI communication protocols.", "difficulty": "medium", "keywords": ["uart", "i2c", "spi", "asynchronous", "clock", "master", "slave", "address", "speed", "wires"], "ideal": "UART is asynchronous point-to-point with TX/RX. I2C uses two wires (SDA, SCL), addressing and supports many devices at moderate speed. SPI uses separate clock, MOSI, MISO and chip-select lines, is full-duplex and faster but needs more pins."}
+    ],
+    "RTOS": [
+      {"question": "What is an RTOS and how do semaphores and mutexes differ?", "difficulty": "hard", "keywords": ["deterministic", "scheduler", "priority", "task", "semaphore", "mutex", "priority inversion", "ownership"], "ideal": "An RTOS provides deterministic, priority-based task scheduling for real-time deadlines. Semaphores signal or count resources; mutexes provide exclusive access with ownership and often priority inheritance to avoid priority inversion."}
+    ],
+    "IoT": [
+      {"question": "How would you architect an IoT system that collects sensor data and shows it on a dashboard?", "difficulty": "medium", "keywords": ["sensor", "microcontroller", "mqtt", "gateway", "cloud", "database", "dashboard", "security", "power"], "ideal": "Sensors connect to a microcontroller that publishes readings over MQTT/HTTP via Wi-Fi or a gateway to a cloud broker, data is stored in a time-series database and visualised on a dashboard, with device authentication, encryption and low-power design."}
+    ],
+    "Unity": [
+      {"question": "Explain the Unity GameObject-component model and the difference between Update and FixedUpdate.", "difficulty": "medium", "keywords": ["gameobject", "component", "monobehaviour", "update", "fixedupdate", "physics", "frame", "time.deltatime"], "ideal": "Everything in a scene is a GameObject whose behaviour comes from attached components (MonoBehaviour scripts, colliders, renderers). Update runs every frame (use Time.deltaTime), while FixedUpdate runs at a fixed timestep and is used for physics."}
+    ],
+    "Game Design": [
+      {"question": "What makes a game mechanic fun, and how do you test it?", "difficulty": "medium", "keywords": ["core loop", "feedback", "challenge", "reward", "prototype", "playtest", "balance", "iterate"], "ideal": "Fun mechanics have a clear core loop, meaningful choices, a balanced challenge with good feedback and rewards. Validate with quick prototypes and frequent playtests, observe players and iterate on balance."}
+    ],
+    "Blockchain": [
+      {"question": "How does a blockchain achieve immutability and consensus?", "difficulty": "medium", "keywords": ["hash", "previous block", "chain", "consensus", "proof of work", "proof of stake", "decentralized", "nodes"], "ideal": "Each block contains the hash of the previous block, so changing data breaks the chain. Distributed nodes agree on the valid chain through consensus mechanisms such as proof of work or proof of stake, making tampering economically impractical."}
+    ],
+    "Solidity": [
+      {"question": "What is a reentrancy attack and how do you prevent it in Solidity?", "difficulty": "hard", "keywords": ["reentrancy", "external call", "checks-effects-interactions", "reentrancyguard", "state", "withdraw", "dao"], "ideal": "A reentrancy attack happens when an external call lets a malicious contract call back into the function before state is updated (as in The DAO hack). Prevent it by updating state before external calls (checks-effects-interactions), using ReentrancyGuard and pull-payment patterns."}
+    ],
+    "HR Management": [
+      {"question": "How would you design a hiring process that is fair and effective?", "difficulty": "medium", "keywords": ["job description", "structured interview", "scorecard", "bias", "diverse", "assessment", "feedback", "candidate experience"], "ideal": "Write a clear job description with must-have criteria, source from diverse channels, use structured interviews and scorecards with consistent questions, include work-sample assessments, reduce bias with panels, and give candidates timely feedback."}
+    ],
+    "Technical Writing": [
+      {"question": "How do you structure documentation for a new API?", "difficulty": "medium", "keywords": ["audience", "quick start", "authentication", "reference", "examples", "errors", "tutorial", "changelog"], "ideal": "Start with an overview and quick start, explain authentication, provide a complete endpoint reference with parameters, example requests/responses and error codes, add task-based tutorials and a changelog, and test every example."}
+    ],
+    "Content Writing": [
+      {"question": "How do you write content that is both engaging and optimised for search?", "difficulty": "easy", "keywords": ["audience", "intent", "keyword", "headline", "structure", "readability", "call to action", "edit"], "ideal": "Research the audience and search intent, pick target keywords naturally, write a compelling headline, structure with headings and short paragraphs, add examples and a call to action, and edit for clarity and readability."}
+    ]
+  }
+}
