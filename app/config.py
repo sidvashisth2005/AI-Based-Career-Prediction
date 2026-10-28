@@ -6,7 +6,8 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = Path(__file__).resolve().parent / "data"
 MODEL_DIR = Path(os.getenv("MODEL_DIR", BASE_DIR / "models"))
-FRONTEND_DIR = BASE_DIR / "frontend"
+# Static web UI. Vercel serves public/ from its CDN; locally FastAPI serves the same files.
+PUBLIC_DIR = BASE_DIR / "public"
 
 
 def _load_dotenv(path: Path) -> None:
@@ -51,6 +52,7 @@ CLAUDE_MODEL = os.getenv("CLAUDE_MODEL", "claude-opus-5-5")
 CLAUDE_EFFORT = os.getenv("CLAUDE_EFFORT", "medium")
 LLM_TIMEOUT_SECONDS = float(os.getenv("LLM_TIMEOUT_SECONDS", "120"))
 
-MAX_UPLOAD_MB = float(os.getenv("MAX_UPLOAD_MB", "5"))
+# Vercel rejects request bodies over 4.5 MB, so keep uploads below that by default.
+MAX_UPLOAD_MB = float(os.getenv("MAX_UPLOAD_MB", "4"))
 SESSION_TTL_MINUTES = int(os.getenv("SESSION_TTL_MINUTES", "120"))
 MAX_SESSIONS = int(os.getenv("MAX_SESSIONS", "1000"))

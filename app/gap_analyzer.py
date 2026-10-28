@@ -1,7 +1,7 @@
 """Skill gap analysis: what a person has, what is missing for a target career, and a learning plan."""
 
-from . import knowledge
-from .predictor import experience_level, skill_match
+from app import knowledge
+from app.predictor import experience_level, skill_match
 
 PRIORITY_BY_WEIGHT = {3: "High", 2: "Medium", 1: "Low"}
 HOURS_PER_WEEK_ASSUMED = 10

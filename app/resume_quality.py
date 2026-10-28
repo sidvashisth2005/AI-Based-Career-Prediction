@@ -2,7 +2,7 @@
 
 import re
 
-from .resume_parser import split_sections
+from app.resume_parser import split_sections
 
 ACTION_VERBS = {
     "achieved", "analysed", "analyzed", "architected", "automated", "built", "collaborated", "conducted",

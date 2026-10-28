@@ -3,10 +3,10 @@
 import re
 from collections import Counter
 
-from . import knowledge
-from .predictor import CareerPredictor, Profile
-from .resume_parser import detect_education
-from .skill_extractor import extract_skills
+from app import knowledge
+from app.predictor import CareerPredictor, Profile
+from app.resume_parser import detect_education
+from app.skill_extractor import extract_skills
 
 STOPWORDS = set("""
 a about above across after again all also am an and any are as at be because been before being below between both but by

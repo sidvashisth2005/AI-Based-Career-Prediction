@@ -3,7 +3,7 @@
 import json
 from functools import lru_cache
 
-from .config import DATA_DIR
+from app.config import DATA_DIR
 
 INTERESTS = [
     "coding", "data", "math", "design", "business", "communication", "security",

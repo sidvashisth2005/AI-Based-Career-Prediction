@@ -1,7 +1,9 @@
 """Interview sessions: question flow, scoring and the final report.
 
-Sessions live in memory, which is fine for a single-process demo; use Redis or a database
-for multi-worker deployments.
+Sessions are cached in memory, and the full session state is also returned to the browser
+with every response. The browser sends it back with each answer, so the interview keeps
+working on serverless hosts (e.g. Vercel) where consecutive requests can reach different
+instances that do not share memory.
 """
 
 import logging
@@ -10,9 +12,9 @@ import time
 import uuid
 from dataclasses import dataclass, field
 
-from .. import config, knowledge
-from ..gap_analyzer import analyze_gap
-from . import llm, offline
+from app import config, knowledge
+from app.gap_analyzer import analyze_gap
+from app.interview import llm, offline
 
 log = logging.getLogger(__name__)
 
@@ -33,6 +35,32 @@ class InterviewSession:
     @property
     def done(self) -> bool:
         return len(self.answers) >= len(self.questions)
+
+    def to_state(self) -> dict:
+        """Everything needed to continue this interview on another server instance."""
+        return {
+            "id": self.id,
+            "career_id": self.career["id"],
+            "difficulty": self.difficulty,
+            "mode": self.mode,
+            "questions": self.questions,
+            "answers": self.answers,
+            "notices": self.notices,
+            "skills": self.profile.get("skills", []),
+        }
+
+    @classmethod
+    def from_state(cls, state: dict) -> "InterviewSession":
+        career = knowledge.get_career(state["career_id"])
+        if career is None:
+            raise KeyError(state["career_id"])
+        if len(state["answers"]) > len(state["questions"]):
+            raise ValueError("Invalid interview state")
+        return cls(
+            id=state["id"], career=career, profile={"skills": state.get("skills", [])},
+            difficulty=state["difficulty"], questions=state["questions"], mode=state["mode"],
+            answers=list(state["answers"]), notices=state.get("notices", []),
+        )
 
     def question_payload(self, index: int) -> dict:
         q = self.questions[index]
@@ -65,6 +93,18 @@ class SessionStore:
 
 
 store = SessionStore()
+
+
+def resolve_session(session_id: str, state: dict | None) -> InterviewSession | None:
+    """Find a session in this instance's memory, or rebuild it from the state the browser sent."""
+    session = store.get(session_id)
+    if session is not None:
+        return session
+    if state is None or state.get("id") != session_id:
+        return None
+    session = InterviewSession.from_state(state)
+    store.add(session)
+    return session
 
 
 def start_interview(career_id: str, profile: dict, num_questions: int = 6, difficulty: str = "medium") -> InterviewSession:

@@ -1,0 +1,26 @@
+[project]
+name = "ai-based-career-prediction"
+version = "1.1.0"
+description = "Career prediction, skill-gap analysis, job matching and AI mock interviews from your resume."
+readme = "README.md"
+requires-python = ">=3.10"
+# Keep in sync with requirements.txt (a test checks this).
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
+    "python-multipart>=0.0.9",
+    "pydantic>=2.7",
+    "numpy>=1.26",
+    "pdfplumber>=0.11",
+    "pypdf>=4.0",
+    "python-docx>=1.1",
+    "google-genai>=1.50",
+    "anthropic>=2.3",
+]
+
+# Vercel: the FastAPI app object lives in app/main.py.
+[tool.vercel]
+entrypoint = "app.main:app"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

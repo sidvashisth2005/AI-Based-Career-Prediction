@@ -3,7 +3,7 @@
 import re
 from functools import lru_cache
 
-from . import knowledge
+from app import knowledge
 
 # Characters that, when adjacent to an alias, mean we are inside a longer token
 # (e.g. "c" inside "c++" or "java" inside "javascript").

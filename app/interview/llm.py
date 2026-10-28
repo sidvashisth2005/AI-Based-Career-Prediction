@@ -9,7 +9,7 @@ import json
 import logging
 import os
 
-from .. import config
+from app import config
 
 log = logging.getLogger(__name__)
 

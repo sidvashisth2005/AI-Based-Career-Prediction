@@ -1,27 +1,33 @@
 """Career prediction: an ML classifier combined with explainable skill and interest matching.
 
-The classifier is a multinomial logistic regression over a multi-hot vector of skills and
-interests. It is trained on synthetic profiles sampled from the career knowledge base, so it
-learns which combinations of skills are characteristic of each career (including skills that
-the hand-written requirements do not list for that career).
+The classifier is a multinomial logistic (softmax) regression over a multi-hot vector of skills
+and interests, implemented in NumPy so the app stays small enough for serverless hosts. It is
+trained on synthetic profiles sampled from the career knowledge base, so it learns which
+combinations of skills are characteristic of each career (including skills that the
+hand-written requirements do not list for that career).
+
+The trained weights ship in ``models/career_model.npz``. If that file is missing or out of date
+with the knowledge base, the model is retrained in memory (about a second) and saved wherever
+the filesystem allows; a read-only filesystem is fine.
 """
 
+import json
 import logging
 import random
+import tempfile
 from dataclasses import dataclass
+from pathlib import Path
 
-import joblib
 import numpy as np
-from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split
 
-from . import knowledge
-from .config import MODEL_DIR
+from app import knowledge
+from app.config import MODEL_DIR
 
 log = logging.getLogger(__name__)
 
-MODEL_PATH = MODEL_DIR / "career_model.joblib"
-MODEL_VERSION = 1
+MODEL_FILE = "career_model.npz"
+MODEL_PATH = MODEL_DIR / MODEL_FILE
+MODEL_VERSION = 2
 GENERIC_SKILLS = ["Git", "Communication", "Problem Solving", "Excel", "Leadership", "Agile"]
 
 
@@ -42,6 +48,10 @@ class Profile:
 
 def _feature_names() -> list[str]:
     return list(knowledge.skills()) + [f"interest:{i}" for i in knowledge.INTERESTS]
+
+
+def _class_names() -> list[str]:
+    return [c["id"] for c in knowledge.careers()]
 
 
 def _sample_profile(career: dict, all_skills: list[str], rng: random.Random) -> tuple[list[str], list[str]]:
@@ -73,12 +83,13 @@ def _sample_profile(career: dict, all_skills: list[str], rng: random.Random) -> 
 
 
 def generate_dataset(samples_per_career: int = 400, seed: int = 42) -> tuple[np.ndarray, np.ndarray]:
+    """Return (X multi-hot features, y class indices into _class_names())."""
     rng = random.Random(seed)
     features = _feature_names()
     index = {f: i for i, f in enumerate(features)}
     all_skills = list(knowledge.skills())
     rows, labels = [], []
-    for career in knowledge.careers():
+    for label, career in enumerate(knowledge.careers()):
         for _ in range(samples_per_career):
             skills, interests = _sample_profile(career, all_skills, rng)
             vec = np.zeros(len(features), dtype=np.float32)
@@ -87,49 +98,116 @@ def generate_dataset(samples_per_career: int = 400, seed: int = 42) -> tuple[np.
             for i in interests:
                 vec[index[f"interest:{i}"]] = 1.0
             rows.append(vec)
-            labels.append(career["id"])
-    return np.vstack(rows), np.array(labels)
+            labels.append(label)
+    return np.vstack(rows), np.array(labels, dtype=np.int64)
+
+
+def _softmax(z: np.ndarray) -> np.ndarray:
+    z = z - z.max(axis=1, keepdims=True)
+    e = np.exp(z)
+    return e / e.sum(axis=1, keepdims=True)
+
+
+def fit_softmax(X: np.ndarray, y: np.ndarray, n_classes: int, l2: float = 1e-3,
+                steps: int = 400, lr: float = 0.05, seed: int = 0) -> tuple[np.ndarray, np.ndarray]:
+    """Full-batch multinomial logistic regression with L2 regularisation, optimised with Adam."""
+    rng = np.random.default_rng(seed)
+    n, d = X.shape
+    W = rng.normal(0, 0.01, (d, n_classes)).astype(np.float64)
+    b = np.zeros(n_classes)
+    Y = np.eye(n_classes)[y]
+    m = [np.zeros_like(W), np.zeros_like(b)]
+    v = [np.zeros_like(W), np.zeros_like(b)]
+    beta1, beta2, eps = 0.9, 0.999, 1e-8
+    for t in range(1, steps + 1):
+        P = _softmax(X @ W + b)
+        G = (P - Y) / n
+        grads = [X.T @ G + l2 * W, G.sum(axis=0)]
+        for i, (param, g) in enumerate(zip((W, b), grads)):
+            m[i] = beta1 * m[i] + (1 - beta1) * g
+            v[i] = beta2 * v[i] + (1 - beta2) * g * g
+            param -= lr * (m[i] / (1 - beta1 ** t)) / (np.sqrt(v[i] / (1 - beta2 ** t)) + eps)
+    return W, b
 
 
 def train(samples_per_career: int = 400, seed: int = 42, save: bool = True) -> dict:
     X, y = generate_dataset(samples_per_career, seed)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=seed, stratify=y)
-    model = LogisticRegression(max_iter=3000, C=0.8)
-    model.fit(X_train, y_train)
-    accuracy = float(model.score(X_test, y_test))
-    proba = model.predict_proba(X_test)
+    order = np.random.default_rng(seed).permutation(len(y))
+    split = int(len(y) * 0.8)
+    tr, te = order[:split], order[split:]
+    classes = _class_names()
+    W, b = fit_softmax(X[tr], y[tr], len(classes), seed=seed)
+
+    proba = _softmax(X[te] @ W + b)
+    accuracy = float(np.mean(proba.argmax(axis=1) == y[te]))
     top3 = np.argsort(proba, axis=1)[:, -3:]
-    top3_accuracy = float(np.mean([y_test[i] in model.classes_[top3[i]] for i in range(len(y_test))]))
+    top3_accuracy = float(np.mean([y[te][i] in top3[i] for i in range(len(te))]))
     bundle = {
-        "model": model,
+        "W": W.astype(np.float32),
+        "b": b.astype(np.float32),
         "features": _feature_names(),
+        "classes": classes,
         "version": MODEL_VERSION,
         "metrics": {"accuracy": round(accuracy, 4), "top3_accuracy": round(top3_accuracy, 4), "samples": int(len(y))},
     }
     if save:
-        MODEL_DIR.mkdir(parents=True, exist_ok=True)
-        joblib.dump(bundle, MODEL_PATH)
+        save_bundle(bundle)
     return bundle
+
+
+def save_bundle(bundle: dict, path: Path | None = None) -> Path | None:
+    """Save the model; fall back to the temp dir on read-only filesystems (e.g. serverless)."""
+    targets = [path] if path else [MODEL_PATH, Path(tempfile.gettempdir()) / MODEL_FILE]
+    for target in targets:
+        try:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            with open(target, "wb") as f:
+                np.savez_compressed(
+                    f, W=bundle["W"], b=bundle["b"],
+                    features=np.array(bundle["features"]), classes=np.array(bundle["classes"]),
+                    meta=np.array(json.dumps({"version": bundle["version"], "metrics": bundle["metrics"]})),
+                )
+            return target
+        except OSError as exc:
+            log.info("Could not save model to %s (%s)", target, exc)
+    return None
+
+
+def load_bundle(path: Path) -> dict:
+    with np.load(path, allow_pickle=False) as data:
+        meta = json.loads(str(data["meta"]))
+        return {
+            "W": data["W"], "b": data["b"],
+            "features": [str(f) for f in data["features"]],
+            "classes": [str(c) for c in data["classes"]],
+            "version": meta["version"], "metrics": meta["metrics"],
+        }
 
 
 class CareerPredictor:
     def __init__(self, bundle: dict):
-        self.model: LogisticRegression = bundle["model"]
+        self.W: np.ndarray = bundle["W"]
+        self.b: np.ndarray = bundle["b"]
         self.features: list[str] = bundle["features"]
+        self.classes: list[str] = bundle["classes"]
         self.metrics: dict = bundle.get("metrics", {})
         self._index = {f: i for i, f in enumerate(self.features)}
 
     @classmethod
     def load_or_train(cls) -> "CareerPredictor":
         """Load the saved model; retrain if it is missing or out of date with the knowledge base."""
-        if MODEL_PATH.exists():
+        for path in (MODEL_PATH, Path(tempfile.gettempdir()) / MODEL_FILE):
+            if not path.exists():
+                continue
             try:
-                bundle = joblib.load(MODEL_PATH)
-                if bundle.get("version") == MODEL_VERSION and bundle.get("features") == _feature_names() \
-                        and set(bundle["model"].classes_) == set(knowledge.careers_by_id()):
-                    return cls(bundle)
-            except Exception as exc:  # corrupt file or incompatible sklearn version
-                log.warning("Could not load saved model (%s); retraining", exc)
+                bundle = load_bundle(path)
+            except Exception as exc:  # corrupt or old-format file
+                log.warning("Could not load model from %s (%s)", path, exc)
+                continue
+            if bundle["version"] == MODEL_VERSION and bundle["features"] == _feature_names() \
+                    and bundle["classes"] == _class_names():
+                return cls(bundle)
+            log.info("Saved model at %s is out of date with the knowledge base", path)
         log.info("Training career model")
         return cls(train())
 
@@ -145,8 +223,8 @@ class CareerPredictor:
         return vec
 
     def probabilities(self, profile: Profile) -> dict[str, float]:
-        proba = self.model.predict_proba(self._vector(profile))[0]
-        return dict(zip(self.model.classes_, proba.tolist()))
+        proba = _softmax(self._vector(profile) @ self.W + self.b)[0]
+        return dict(zip(self.classes, proba.tolist()))
 
     def predict(self, profile: Profile, top_k: int = 5) -> dict:
         user_skills = set(profile.skills)

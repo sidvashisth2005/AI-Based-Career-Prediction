@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AI Career Predictor</title>
   <meta name="description" content="Predict suitable careers, find your skill gaps, match job descriptions and practise mock interviews based on your resume.">
-  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <header class="topbar">
@@ -36,7 +36,7 @@
             <input id="resume-file" type="file" accept=".pdf,.docx,.txt" hidden>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0l-4 4m4-4l4 4M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <span><b>Choose a file</b> or drag it here</span>
-            <small>PDF, DOCX or TXT · max 5 MB</small>
+            <small>PDF, DOCX or TXT · max 4 MB</small>
           </label>
           <details class="paste">
             <summary>…or paste resume text</summary>
@@ -157,6 +157,6 @@
 
   <footer class="no-print">Predictions and salary ranges are indicative guidance, not guarantees. <a href="/docs">API docs</a></footer>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="/static/app.js"></script>
+  <script src="/app.js"></script>
 </body>
 </html>

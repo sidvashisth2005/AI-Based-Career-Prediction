@@ -523,7 +523,9 @@ async function submitAnswer(skip = false) {
   const seconds = elapsedSeconds();
   await withBusy(btn, "Evaluating…", async () => {
     try {
-      const r = await postJSON(`/api/interview/${state.interview.session_id}/answer`, { answer });
+      // Send the interview state along so any server instance can continue it (needed on Vercel).
+      const r = await postJSON(`/api/interview/${state.interview.session_id}/answer`, { answer, state: state.interview.state });
+      state.interview.state = r.state;
       r.evaluation.seconds = seconds;
       state.interview.times.push(seconds);
       $("#iv-thread").insertAdjacentHTML("beforeend", `<div class="bubble a">${answer ? esc(answer) : "<i>(skipped)</i>"}</div>${feedbackHtml(r.evaluation)}`);
@@ -540,7 +542,7 @@ async function finishInterview() {
   $("#iv-answer-box").hidden = true;
   $("#iv-progress").style.width = "100%";
   try {
-    const rep = await api(`/api/interview/${state.interview.session_id}/report`);
+    const rep = await postJSON(`/api/interview/${state.interview.session_id}/report`, { state: state.interview.state });
     recordHistory(rep);
     renderHistory();
     const times = state.interview.times;

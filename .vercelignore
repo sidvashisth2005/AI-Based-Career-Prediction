@@ -1,0 +1,8 @@
+tests/
+samples/
+scripts/
+.github/
+Dockerfile
+requirements-dev.txt
+*.md
+!README.md

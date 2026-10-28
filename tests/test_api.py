@@ -8,7 +8,8 @@ def test_health_and_meta(client):
 def test_index_served(client):
     r = client.get("/")
     assert r.status_code == 200 and "AI Career Predictor" in r.text
-    assert client.get("/static/app.js").status_code == 200
+    assert client.get("/app.js").status_code == 200 and client.get("/styles.css").status_code == 200
+    assert client.get("/docs").status_code == 200  # API docs are not shadowed by the UI mount
 
 
 def test_resume_upload_and_text(client, resume_text):

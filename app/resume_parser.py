@@ -4,7 +4,7 @@ import io
 import re
 from datetime import date
 
-from .skill_extractor import extract_skills
+from app.skill_extractor import extract_skills
 
 SECTION_HEADINGS = {
     "summary": ["summary", "profile", "objective", "about me", "career objective", "professional summary"],

@@ -36,8 +36,50 @@ class InterviewStartIn(BaseModel):
     difficulty: Literal["easy", "medium", "hard"] = "medium"
 
 
+class StateQuestion(BaseModel):
+    text: str = Field(..., max_length=3000)
+    category: Literal["introduction", "technical", "project", "scenario", "behavioral"]
+    skill: str | None = Field(None, max_length=100)
+    keywords: list[str] = Field(default_factory=list, max_length=12)
+    ideal: str = Field("", max_length=4000)
+
+
+class StateEvaluation(BaseModel):
+    score: float = Field(..., ge=0, le=10)
+    max_score: int = 10
+    strengths: list[str] = Field(default_factory=list, max_length=10)
+    improvements: list[str] = Field(default_factory=list, max_length=10)
+    matched_keywords: list[str] = Field(default_factory=list, max_length=20)
+    missing_keywords: list[str] = Field(default_factory=list, max_length=20)
+    model_answer: str = Field("", max_length=4000)
+    evaluator: str | None = Field(None, max_length=20)
+
+
+class StateAnswer(BaseModel):
+    answer: str = Field("", max_length=10_000)
+    evaluation: StateEvaluation
+
+
+class InterviewState(BaseModel):
+    """Interview state the browser keeps and sends back, so any server instance can continue it."""
+
+    id: str = Field(..., min_length=8, max_length=64)
+    career_id: str = Field(..., max_length=64)
+    difficulty: Literal["easy", "medium", "hard"]
+    mode: Literal["gemini", "claude", "offline"]
+    questions: list[StateQuestion] = Field(..., min_length=1, max_length=12)
+    answers: list[StateAnswer] = Field(default_factory=list, max_length=12)
+    notices: list[str] = Field(default_factory=list, max_length=5)
+    skills: list[str] = Field(default_factory=list, max_length=200)
+
+
 class AnswerIn(BaseModel):
     answer: str = Field("", max_length=10_000)
+    state: InterviewState | None = None
+
+
+class ReportIn(BaseModel):
+    state: InterviewState | None = None
 
 
 class WhatIfIn(BaseModel):

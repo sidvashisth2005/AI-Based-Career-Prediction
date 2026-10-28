@@ -7,7 +7,7 @@ import math
 import random
 import re
 
-from .. import knowledge
+from app import knowledge
 
 DIFFICULTY_ORDER = {"easy": ["easy", "medium", "hard"], "medium": ["medium", "easy", "hard"], "hard": ["hard", "medium", "easy"]}
 DONT_KNOW = re.compile(r"\b(i\s*(do\s*not|don'?t)\s*know|no idea|not sure|i have no clue|skip|pass)\b", re.IGNORECASE)

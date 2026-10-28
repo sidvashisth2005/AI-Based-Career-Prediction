@@ -1,21 +1,28 @@
 """FastAPI application: REST API plus the single-page web UI."""
 
 import logging
+import sys
 from contextlib import asynccontextmanager
+from pathlib import Path
+
+# Serverless hosts may load this file directly rather than as "app.main"; make sure the project
+# root is importable so the absolute "app.*" imports below work either way.
+_ROOT = str(Path(__file__).resolve().parent.parent)
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
-from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from . import __version__, config, knowledge
-from .gap_analyzer import analyze_gap
-from .interview import engine, llm
-from .job_match import analyze_job_match
-from .predictor import CareerPredictor, Profile
-from .resume_parser import ResumeError, extract_text, parse_resume
-from .resume_quality import assess_resume
-from .schemas import AnswerIn, GapIn, InterviewStartIn, JobMatchIn, PredictIn, WhatIfIn
-from .skill_extractor import extract_skills, normalize_skills
+from app import __version__, config, knowledge
+from app.gap_analyzer import analyze_gap
+from app.interview import engine, llm
+from app.job_match import analyze_job_match
+from app.predictor import CareerPredictor, Profile
+from app.resume_parser import ResumeError, extract_text, parse_resume
+from app.resume_quality import assess_resume
+from app.schemas import AnswerIn, GapIn, InterviewStartIn, JobMatchIn, PredictIn, ReportIn, WhatIfIn
+from app.skill_extractor import extract_skills, normalize_skills
 
 MAX_RESUME_TEXT = 200_000
 
@@ -186,23 +193,33 @@ def interview_start(body: InterviewStartIn):
         "total": len(session.questions),
         "notices": session.notices,
         "question": session.question_payload(0),
+        "state": session.to_state(),
     }
 
 
-def _session(session_id: str) -> engine.InterviewSession:
-    session = engine.store.get(session_id)
+def _session(session_id: str, state=None) -> engine.InterviewSession:
+    try:
+        session = engine.resolve_session(session_id, state.model_dump() if state else None)
+    except (KeyError, ValueError):
+        raise HTTPException(400, "Invalid interview state") from None
     if session is None:
-        raise HTTPException(404, "Interview session not found or expired")
+        raise HTTPException(404, "Interview session not found or expired. Please start a new interview.")
     return session
 
 
 @app.post("/api/interview/{session_id}/answer")
 def interview_answer(session_id: str, body: AnswerIn):
-    session = _session(session_id)
+    session = _session(session_id, body.state)
     try:
-        return engine.submit_answer(session, body.answer)
+        result = engine.submit_answer(session, body.answer)
     except ValueError as exc:
         raise HTTPException(409, str(exc)) from exc
+    return {**result, "state": session.to_state()}
+
+
+@app.post("/api/interview/{session_id}/report")
+def interview_report_from_state(session_id: str, body: ReportIn):
+    return engine.build_report(_session(session_id, body.state))
 
 
 @app.get("/api/interview/{session_id}/report")
@@ -210,9 +227,5 @@ def interview_report(session_id: str):
     return engine.build_report(_session(session_id))
 
 
-app.mount("/static", StaticFiles(directory=config.FRONTEND_DIR), name="static")
-
-
-@app.get("/", include_in_schema=False)
-def index():
-    return FileResponse(config.FRONTEND_DIR / "index.html")
+# The web UI (index.html, app.js, styles.css). Mounted last so it never shadows /api or /docs.
+app.mount("/", StaticFiles(directory=config.PUBLIC_DIR, html=True), name="ui")
