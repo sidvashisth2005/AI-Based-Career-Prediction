@@ -13,7 +13,8 @@ DIFFICULTY_ORDER = {"easy": ["easy", "medium", "hard"], "medium": ["medium", "ea
 DONT_KNOW = re.compile(r"\b(i\s*(do\s*not|don'?t)\s*know|no idea|not sure|i have no clue|skip|pass)\b", re.IGNORECASE)
 STAR_SIGNALS = {
     "situation": re.compile(r"\b(when|during|while|at my|in my|once|last year|semester|internship)\b", re.I),
-    "action": re.compile(r"\b(i (built|created|led|decided|implemented|designed|wrote|organized|organised|talked|proposed|fixed|took|started|used|worked))\b", re.I),
+    # "I/we" followed by a past-tense verb: regular (-ed) or a common irregular one.
+    "action": re.compile(r"\b(i|we)\s+(\w+ed|built|led|took|made|wrote|ran|set|broke|gave|found|got|did|spoke|chose|drove|taught|began|brought|kept|met|sent|won)\b", re.I),
     "result": re.compile(r"(\d+\s*%|\b(result|resulted|improved|reduced|increased|achieved|saved|delivered|won|learned|learnt|outcome)\b)", re.I),
 }
 EXAMPLE_SIGNALS = re.compile(r"\b(for example|e\.g|such as|for instance|in my project|i used|i built|i implemented|like when)\b", re.I)
@@ -76,6 +77,9 @@ def evaluate_answer(question: dict, answer: str) -> dict:
         score = 0.0
     elif DONT_KNOW.search(answer) and words < 15:
         score = min(score, 1.5)
+    elif keywords and not hit and len(keywords) >= 3:
+        # A long, well-structured answer that touches none of the key points is probably off-topic.
+        score = min(score, 3.0)
     score = round(score, 1)
 
     strengths, improvements = [], []
@@ -88,6 +92,8 @@ def evaluate_answer(question: dict, answer: str) -> dict:
     if not behavioral and structure == 1.0:
         strengths.append("Explained the reasoning and backed it with an example")
 
+    if keywords and not hit and len(keywords) >= 3:
+        improvements.append("Your answer does not seem to address this question; re-read it and answer it directly")
     if miss and coverage < 1.0:
         improvements.append("Consider mentioning: " + ", ".join(miss[:5]))
     if words < 25:
@@ -126,8 +132,8 @@ def _technical(skill: str, career: dict, difficulty: str, used: set[str], rng: r
     if q:
         text = q["question"]
         if claimed and rng.random() < 0.5:
-            text = f"Your resume lists {skill}. {text}"
-        return {"text": text, "category": "technical", "skill": skill, "keywords": q["keywords"], "ideal": q["ideal"]}
+            text = f"You list {skill} as one of your skills. {text}"
+        return {"text": text, "category": "technical", "skill": skill, "keywords": q["keywords"], "ideal": q["ideal"], "bank_text": q["question"]}
     info = knowledge.skill_info(skill)
     concepts = info["concepts"] or [skill.lower()]
     return {
@@ -145,7 +151,8 @@ def plan_questions(career: dict, profile: dict, num_questions: int = 6, difficul
     num_questions = max(4, min(12, num_questions))
     user_skills = set(profile.get("skills", []))
     projects = profile.get("projects", [])
-    matched_top = [s for s in profile.get("skills", []) if s in knowledge.career_skill_set(career)][:3]
+    core_skills = {o for req in career["core"] for o in knowledge.requirement_options(req)}
+    matched_top = [s for s in profile.get("skills", []) if s in core_skills][:3]
 
     intro = {
         "text": f"Tell me about yourself and why you are interested in the {career['title']} role.",
@@ -204,7 +211,7 @@ def plan_questions(career: dict, profile: dict, num_questions: int = 6, difficul
             continue
         seen.add(skill)
         q = _technical(skill, career, difficulty, used, rng, claimed=skill in user_skills)
-        used.add(q["text"])
+        used.add(q.pop("bank_text", q["text"]))
         technical.append(q)
 
     plan = [intro, *technical, project_q]

@@ -53,3 +53,20 @@ def test_full_session_and_report():
     assert 0 <= report["overall_score"] <= 10
     assert report["verdict"] in ("Strong", "Promising", "Needs practice", "Not ready yet")
     assert set(report["category_scores"]) >= {"introduction", "behavioral"}
+
+
+def test_star_detection_handles_common_verbs():
+    q = {"text": "Tell me about a deadline", "category": "behavioral", "keywords": ["deadline", "plan", "result"]}
+    ev = offline.evaluate_answer(q, "When I had a tight deadline in my internship, I broke the task down and planned each day. "
+                                    "The result was that we delivered on time and I learned to prioritise.")
+    assert "Clear STAR structure (situation, action, result)" in ev["strengths"]
+    assert ev["score"] >= 8
+
+
+def test_off_topic_answer_is_capped():
+    q = knowledge.questions()["skills"]["Python"][1]  # decorators and generators
+    question = {"text": q["question"], "category": "technical", "keywords": q["keywords"], "ideal": q["ideal"]}
+    off_topic = ("Overfitting is when the model memorises noise in the training data; I prevent it with cross validation "
+                 "and regularization. For example, in my churn project I used L2 because the train/test gap was large.")
+    ev = offline.evaluate_answer(question, off_topic)
+    assert ev["score"] <= 3 and any("address this question" in i for i in ev["improvements"])

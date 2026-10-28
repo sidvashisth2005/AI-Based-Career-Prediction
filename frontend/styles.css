@@ -42,6 +42,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html, body { margin: 0; }
 body {
   background: var(--bg);
@@ -226,9 +227,59 @@ ul.plain { margin: 0; padding-left: 1.1rem; }
 .empty { text-align: center; color: var(--muted); padding: 2rem 1rem; }
 .spinner { display: inline-block; width: 1em; height: 1em; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: -2px; margin-right: .4rem; }
 @keyframes spin { to { transform: rotate(360deg); } }
-.toast { position: fixed; bottom: 1.25rem; left: 50%; transform: translateX(-50%) translateY(150%); background: var(--text); color: var(--bg); padding: .65rem 1rem; border-radius: 10px; transition: transform .25s; max-width: calc(100% - 2rem); z-index: 20; }
-.toast.show { transform: translateX(-50%) translateY(0); }
+.toast { position: fixed; bottom: 1.25rem; left: 50%; transform: translateX(-50%) translateY(150%); background: var(--text); color: var(--bg); padding: .65rem 1rem; border-radius: 10px; transition: transform .25s, opacity .25s, visibility .25s; max-width: calc(100% - 2rem); z-index: 20; opacity: 0; visibility: hidden; }
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; visibility: visible; }
 footer { text-align: center; color: var(--muted); font-size: .85rem; padding: 1.5rem 1rem 2rem; }
+
+/* resume health */
+.quality { margin-top: .9rem; padding-top: .8rem; border-top: 1px solid var(--border); }
+.quality .checks { display: flex; flex-wrap: wrap; gap: .35rem; margin: .5rem 0; }
+.quality .chip { font-size: .78rem; }
+.tips { font-size: .88rem; }
+.resume-summary .quality { border-top-color: color-mix(in srgb, var(--good) 25%, transparent); }
+
+/* toggles, options */
+.check { display: inline-flex; align-items: center; gap: .45rem; font-size: .9rem; cursor: pointer; }
+.check input { width: auto; }
+.options { margin: 0 0 1rem; align-items: center; }
+.hero-actions { display: flex; flex-direction: column; gap: .5rem; align-items: stretch; }
+
+/* what-if simulator */
+.whatif .toggles .chip { cursor: pointer; }
+.whatif-result { margin-top: 1rem; }
+.compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .75rem; margin-bottom: .5rem; }
+.compare > div { background: var(--surface-2); border-radius: 10px; padding: .7rem .85rem; }
+.compare .big { font-size: 1.15rem; margin: .1rem 0; }
+.up { color: var(--good); font-weight: 600; }
+.down { color: var(--bad); font-weight: 600; }
+
+/* interview: timer, mic, history */
+.timer { font-variant-numeric: tabular-nums; }
+.timer.over { color: var(--warn); font-weight: 600; }
+#iv-mic.recording { color: var(--bad); border-color: var(--bad); animation: pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 50% { box-shadow: 0 0 0 4px var(--bad-soft); } }
+.history { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+.spark { display: flex; align-items: flex-end; gap: .4rem; height: 70px; margin: .6rem 0; }
+.spark-bar { flex: 1; max-width: 48px; height: var(--h); min-height: 14px; background: var(--primary-soft); border-radius: 6px 6px 2px 2px; position: relative; }
+.spark-bar:last-child { background: var(--primary); }
+.spark-bar span { position: absolute; top: -1.2rem; left: 0; right: 0; text-align: center; font-size: .72rem; color: var(--muted); }
+
+/* job match */
+.ai-card { border-color: color-mix(in srgb, var(--primary) 35%, var(--border)); }
+blockquote { margin: .5rem 0; padding: .75rem 1rem; border-left: 4px solid var(--primary); background: var(--surface-2); border-radius: 0 10px 10px 0; }
+.rewrite { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; margin: .5rem 0; font-size: .9rem; }
+.rewrite > div { padding: .6rem .75rem; border-radius: 10px; }
+.rewrite .before { background: var(--bad-soft); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--bad) 40%, transparent); }
+.rewrite .after { background: var(--good-soft); }
+a.chip { text-decoration: none; }
+
+@media print {
+  .topbar, footer, .no-print, .toast, .toolbar, #interview-setup, #iv-answer-box, .progress, .card-actions { display: none !important; }
+  body { background: #fff; color: #000; }
+  main { padding: 0; max-width: none; }
+  .card { box-shadow: none; break-inside: avoid; }
+  .view.active { animation: none; }
+}
 
 @media (max-width: 640px) {
   .topbar { padding: .6rem 1rem; }
@@ -239,4 +290,6 @@ footer { text-align: center; color: var(--muted); font-size: .85rem; padding: 1.
   .bubble.a { max-width: 100%; }
   .metric { grid-template-columns: 95px 1fr 40px; }
   #engine-badge { display: none; }
+  .rewrite { grid-template-columns: 1fr; }
+  .row.wrap-sm { flex-direction: column; align-items: stretch; gap: .6rem; }
 }

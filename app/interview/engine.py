@@ -24,10 +24,11 @@ class InterviewSession:
     profile: dict
     difficulty: str
     questions: list[dict]
-    mode: str  # "claude" or "offline"
+    mode: str  # "gemini", "claude" or "offline"
     answers: list[dict] = field(default_factory=list)
     created: float = field(default_factory=time.time)
     notices: list[str] = field(default_factory=list)
+    lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
 
     @property
     def done(self) -> bool:
@@ -39,14 +40,17 @@ class InterviewSession:
 
 
 class SessionStore:
-    def __init__(self, ttl_minutes: int = config.SESSION_TTL_MINUTES):
+    def __init__(self, ttl_minutes: int = config.SESSION_TTL_MINUTES, max_sessions: int = config.MAX_SESSIONS):
         self._sessions: dict[str, InterviewSession] = {}
         self._lock = threading.Lock()
         self._ttl = ttl_minutes * 60
+        self._max = max_sessions
 
     def add(self, session: InterviewSession) -> None:
         with self._lock:
             self._purge()
+            while len(self._sessions) >= self._max:  # drop the oldest to bound memory
+                del self._sessions[min(self._sessions, key=lambda k: self._sessions[k].created)]
             self._sessions[session.id] = session
 
     def get(self, session_id: str) -> InterviewSession | None:
@@ -70,13 +74,14 @@ def start_interview(career_id: str, profile: dict, num_questions: int = 6, diffi
     gap = analyze_gap(career_id, profile.get("skills", []), profile.get("experience_years", 0))
     notices = []
     questions, mode = None, "offline"
-    if llm.enabled():
+    provider = llm.provider()
+    if provider:
         try:
             questions = llm.generate_questions(career, profile, gap, num_questions, difficulty)
-            mode = "claude"
+            mode = provider
         except llm.LLMError as exc:
             log.warning("Falling back to offline questions: %s", exc)
-            notices.append("AI question generation was unavailable, so questions come from the built-in bank.")
+            notices.append(f"AI question generation was unavailable ({exc}), so questions come from the built-in bank.")
     if questions is None:
         questions = offline.plan_questions(career, profile, num_questions, difficulty)
     session = InterviewSession(
@@ -88,12 +93,18 @@ def start_interview(career_id: str, profile: dict, num_questions: int = 6, diffi
 
 
 def submit_answer(session: InterviewSession, answer: str) -> dict:
+    # Serialise answers per session so a double-click cannot record two answers for one question.
+    with session.lock:
+        return _submit_answer(session, answer)
+
+
+def _submit_answer(session: InterviewSession, answer: str) -> dict:
     if session.done:
         raise ValueError("This interview is already complete")
     index = len(session.answers)
     question = session.questions[index]
     evaluation = None
-    if session.mode == "claude":
+    if session.mode != "offline":
         try:
             evaluation = llm.evaluate_answer(session.career, question, answer, session.difficulty)
         except llm.LLMError as exc:

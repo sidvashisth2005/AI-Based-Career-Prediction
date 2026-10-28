@@ -5,7 +5,10 @@ const state = {
   profile: { skills: [], interests: [], experience_years: 0, education: "", projects: [], resume_text: "" },
   prediction: null,
   interview: null,
+  ai: { provider: null, label: "Offline" },
+  gap: null,
 };
+const PROVIDER_LABEL = { gemini: "Gemini", claude: "Claude" };
 
 const $ = (sel) => document.querySelector(sel);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -15,6 +18,12 @@ const titleCase = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 // ---------- persistence (per-browser convenience only) ----------
 function saveProfile() {
   try { localStorage.setItem("career-profile", JSON.stringify(state.profile)); } catch (_) { /* storage unavailable */ }
+}
+function loadJSON(key, fallback) {
+  try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; } catch (_) { return fallback; }
+}
+function saveJSON(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch (_) { /* storage unavailable */ }
 }
 function loadProfile() {
   try {
@@ -112,7 +121,17 @@ function applyResume(parsed) {
       <li>Education: ${esc(parsed.education || "not detected")}</li>
       <li>Experience: ${parsed.experience_years ? esc(parsed.experience_years) + " years" : "fresher / not detected"}</li>
       <li>Projects: ${parsed.projects.length ? esc(parsed.projects.join("; ")) : "none detected"}</li>
-    </ul>`;
+    </ul>
+    ${parsed.quality ? qualityHtml(parsed.quality) : ""}`;
+}
+
+function qualityHtml(q) {
+  const cls = q.score >= 70 ? "good" : q.score >= 50 ? "medium" : "high";
+  return `<div class="quality">
+    <div class="row between"><b>Resume health</b><span class="badge ${cls}">${q.score}/100 · ${esc(q.label)}</span></div>
+    <div class="checks">${q.checks.map((c) => `<span class="chip ${c.passed ? "good" : "bad"}">${c.passed ? "✓" : "✕"} ${esc(c.name)}</span>`).join("")}</div>
+    ${q.tips.length ? `<ul class="plain tips">${q.tips.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>` : ""}
+  </div>`;
 }
 
 async function parseResume(formData, btn) {
@@ -199,7 +218,9 @@ async function runGap(careerId) {
   await withBusy($("#gap-btn"), "Analysing…", async () => {
     try {
       const g = await postJSON("/api/gap", { career_id: $("#gap-career").value, skills: state.profile.skills, experience_years: state.profile.experience_years });
+      state.gap = g;
       out.innerHTML = renderGap(g);
+      runWhatIf();
     } catch (e) {
       out.innerHTML = `<div class="card empty">${esc(e.message)}</div>`;
     }
@@ -234,8 +255,12 @@ function renderGap(g) {
         <p><b>${esc(g.readiness_label)}</b> · ${g.missing_core.length} core gap${g.missing_core.length === 1 ? "" : "s"} · about <b>${g.estimated_weeks} weeks</b> to close the required gaps and build a portfolio (~${g.hours_per_week_assumed} h/week)</p>
         <div class="meta-line"><span>💰 ${esc(titleCase(g.level))}: ${esc(g.salary)}</span><span>📈 ${esc(g.outlook)} demand</span>${g.roadmap_url ? `<a href="${safeUrl(g.roadmap_url)}" target="_blank" rel="noopener">Full roadmap ↗</a>` : ""}</div>
       </div>
-      <button class="btn primary" data-interview="${esc(g.career_id)}">Practise interview</button>
+      <div class="hero-actions no-print">
+        <button class="btn primary" data-interview="${esc(g.career_id)}">Practise interview</button>
+        <button class="btn ghost small" data-print>Save as PDF</button>
+      </div>
     </div>
+    ${whatIfHtml(g)}
     <div class="grid two">
       <div class="card"><h2>Core requirements</h2><ul class="req-list">${req}</ul></div>
       <div class="card"><h2>Skills to learn</h2>${missing ? `<ul class="req-list">${missing}</ul>` : `<p class="empty">No gaps. You meet every listed requirement 🎉</p>`}</div>
@@ -249,6 +274,186 @@ function renderGap(g) {
         ${g.transferable_skills.length ? `<h3 style="margin-top:1rem">Other skills you bring</h3><div class="chips">${chips(g.transferable_skills, "plain")}</div>` : ""}
       </div>
     </div>`;
+}
+
+// ---------- what-if simulator ----------
+function whatIfHtml(g) {
+  const options = [...g.missing_core.map((m) => m.recommended_skill), ...g.missing_secondary.map((m) => m.recommended_skill)];
+  if (!options.length) return "";
+  return `<div class="card whatif no-print">
+    <h2>What if I learn…? <span class="badge ai">Simulator</span></h2>
+    <p class="hint">Tick the skills you plan to learn to see how your readiness and career ranking would change.</p>
+    <div class="chips toggles" id="whatif-options">${options.map((s, i) => `<button type="button" class="chip${i < 2 ? " on" : ""}" data-whatif="${esc(s)}" aria-pressed="${i < 2}">${esc(s)}</button>`).join("")}</div>
+    <div id="whatif-result" class="whatif-result"></div>
+  </div>`;
+}
+
+async function runWhatIf() {
+  const box = $("#whatif-result");
+  if (!box || !state.gap) return;
+  const add = [...document.querySelectorAll("#whatif-options .chip.on")].map((b) => b.dataset.whatif);
+  if (!add.length) { box.innerHTML = `<p class="hint">Select at least one skill.</p>`; return; }
+  box.innerHTML = `<p class="hint"><span class="spinner"></span>Simulating…</p>`;
+  try {
+    const r = await postJSON("/api/whatif", {
+      career_id: state.gap.career_id, skills: state.profile.skills, add_skills: add,
+      interests: state.profile.interests, experience_years: state.profile.experience_years,
+    });
+    const b = r.before, a = r.after;
+    const delta = (x, y, suffix = "%") => {
+      const d = Math.round((y - x) * 10) / 10;
+      return d > 0 ? `<span class="up">+${d}${suffix}</span>` : d < 0 ? `<span class="down">${d}${suffix}</span>` : `<span class="hint">no change</span>`;
+    };
+    box.innerHTML = `
+      <div class="compare">
+        <div><small class="hint">Readiness</small><div class="big">${Math.round(b.readiness)}% → <b>${Math.round(a.readiness)}%</b></div>${delta(b.readiness, a.readiness)}</div>
+        <div><small class="hint">Rank for this career</small><div class="big">#${b.rank} → <b>#${a.rank}</b></div>${a.rank < b.rank ? `<span class="up">up ${b.rank - a.rank}</span>` : `<span class="hint">same</span>`}</div>
+        <div><small class="hint">Time to learn these</small><div class="big"><b>~${r.learning_weeks} wk</b></div><span class="hint">at ~10 h/week</span></div>
+        <div><small class="hint">Status</small><div class="big"><b>${esc(a.readiness_label)}</b></div><span class="hint">was ${esc(b.readiness_label)}</span></div>
+      </div>
+      <p class="hint">Your top careers after learning ${esc(r.added_skills.join(", "))}: ${a.top.map((t) => `<b>${esc(t.title)}</b> (${Math.round(t.fit_score)}%)`).join(" · ")}</p>
+      ${a.missing_core.length ? `<p class="hint">Still missing for this role: ${esc(a.missing_core.join(", "))}</p>` : `<p class="up">You would meet every core requirement for this role 🎉</p>`}`;
+  } catch (e) {
+    box.innerHTML = `<p class="msg error">${esc(e.message)}</p>`;
+  }
+}
+
+// ---------- voice + timer ----------
+const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+const voice = { rec: null, listening: false, timer: null, started: 0 };
+
+function speak(text) {
+  if (!$("#iv-tts").checked || !("speechSynthesis" in window)) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-IN";
+  u.rate = 1;
+  window.speechSynthesis.speak(u);
+}
+
+function stopListening() {
+  if (voice.rec && voice.listening) voice.rec.stop();
+}
+
+function toggleMic() {
+  if (!SpeechRec) return;
+  if (voice.listening) { stopListening(); return; }
+  const rec = new SpeechRec();
+  rec.lang = "en-IN";
+  rec.continuous = true;
+  rec.interimResults = true;
+  const box = $("#iv-answer");
+  const base = box.value ? box.value.trimEnd() + " " : "";
+  rec.onresult = (e) => {
+    let text = "";
+    for (let i = 0; i < e.results.length; i++) text += e.results[i][0].transcript;
+    box.value = base + text.trim();
+    box.dispatchEvent(new Event("input"));
+  };
+  rec.onend = () => { voice.listening = false; $("#iv-mic").classList.remove("recording"); $("#iv-mic").textContent = "🎤 Speak"; };
+  rec.onerror = (e) => { if (e.error !== "no-speech" && e.error !== "aborted") toast("Microphone: " + e.error); };
+  voice.rec = rec;
+  window.speechSynthesis && window.speechSynthesis.cancel();
+  rec.start();
+  voice.listening = true;
+  $("#iv-mic").classList.add("recording");
+  $("#iv-mic").textContent = "■ Stop";
+}
+
+function startTimer() {
+  clearInterval(voice.timer);
+  voice.started = Date.now();
+  const el = $("#iv-timer");
+  const tick = () => {
+    const sec = Math.floor((Date.now() - voice.started) / 1000);
+    el.textContent = `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
+    el.classList.toggle("over", sec > 180);
+  };
+  tick();
+  voice.timer = setInterval(tick, 1000);
+}
+const elapsedSeconds = () => Math.round((Date.now() - voice.started) / 1000);
+
+// ---------- interview history ----------
+function renderHistory() {
+  const hist = loadJSON("interview-history", []);
+  const box = $("#iv-history");
+  if (!hist.length) { box.innerHTML = ""; return; }
+  const recent = hist.slice(-6);
+  const first = hist[0].score, last = hist[hist.length - 1].score;
+  const trend = hist.length > 1 ? (last >= first ? `<span class="up">+${(last - first).toFixed(1)}</span> since your first interview` : `<span class="down">${(last - first).toFixed(1)}</span> since your first interview`) : "";
+  box.innerHTML = `<div class="history">
+    <div class="row between"><b>Your progress</b><small class="hint">${hist.length} interview${hist.length === 1 ? "" : "s"} ${trend}</small></div>
+    <div class="spark">${recent.map((h) => `<div class="spark-bar" style="--h:${h.score * 10}%" title="${esc(h.title)} · ${h.score}/10"><span>${h.score}</span></div>`).join("")}</div>
+    <ul class="plain hint">${recent.slice().reverse().slice(0, 3).map((h) => `<li>${esc(h.date)} · ${esc(h.title)} (${esc(h.difficulty)}) · <b>${h.score}/10</b> ${esc(h.verdict)}</li>`).join("")}</ul>
+    <button class="btn ghost small" id="iv-clear-history">Clear history</button>
+  </div>`;
+}
+
+function recordHistory(rep) {
+  const hist = loadJSON("interview-history", []);
+  hist.push({ date: new Date().toLocaleDateString(), title: rep.title, score: rep.overall_score, verdict: rep.verdict, difficulty: rep.difficulty, mode: rep.mode });
+  saveJSON("interview-history", hist.slice(-20));
+}
+
+// ---------- job match ----------
+async function runJobMatch() {
+  const jd = $("#jd-text").value.trim();
+  const out = $("#jd-result");
+  if (jd.length < 30) { toast("Paste the full job description first"); return; }
+  if (!state.profile.resume_text && !state.profile.skills.length) { toast("Upload your resume on the Profile step first"); show("profile"); return; }
+  const useAi = !!state.ai.provider && $("#jd-ai").checked;
+  await withBusy($("#jd-btn"), useAi ? "Analysing with AI…" : "Analysing…", async () => {
+    try {
+      const r = await postJSON("/api/jobmatch", {
+        job_description: jd, resume_text: state.profile.resume_text || null, skills: state.profile.skills,
+        experience_years: state.profile.experience_years, use_ai: useAi,
+      });
+      out.innerHTML = renderJobMatch(r);
+    } catch (e) {
+      out.innerHTML = `<div class="card empty">${esc(e.message)}</div>`;
+    }
+  });
+}
+
+function renderJobMatch(r) {
+  const ai = r.ai;
+  return `
+    <div class="card gap-hero">
+      ${ring(r.match_score, true)}
+      <div class="info">
+        <h2>${esc(r.label)}</h2>
+        <p>Skills ${r.skill_score}% · keywords ${r.keyword_score}%${r.likely_role ? ` · this job looks like a <b>${esc(r.likely_role.title)}</b> role` : ""}</p>
+        ${r.flags.map((f) => `<p class="msg error">⚠ ${esc(f)}</p>`).join("")}
+      </div>
+      <div class="hero-actions no-print">
+        ${r.likely_role ? `<button class="btn primary" data-interview="${esc(r.likely_role.career_id)}">Practise this interview</button>
+        <button class="btn secondary small" data-gap="${esc(r.likely_role.career_id)}">Skill gap</button>` : ""}
+        <button class="btn ghost small" data-print>Save as PDF</button>
+      </div>
+    </div>
+    <div class="grid two">
+      <div class="card">
+        <h2>Skills the job asks for</h2>
+        ${r.matched_skills.length ? `<small class="hint">On your resume</small><div class="chips">${chips(r.matched_skills, "good")}</div>` : ""}
+        ${r.missing_skills.length ? `<small class="hint" style="display:block;margin-top:.75rem">Missing from your resume</small><div class="chips">${r.resources.map((x) => `<a class="chip bad" href="${safeUrl(x.url)}" target="_blank" rel="noopener">${esc(x.skill)} ↗</a>`).join("")}${chips(r.missing_skills.slice(6), "bad")}</div>` : `<p class="up">Your resume covers every skill in this job description 🎉</p>`}
+        <h3 style="margin-top:1rem">Keywords</h3>
+        <div class="chips">${chips(r.matched_keywords, "good")}${chips(r.missing_keywords, "plain")}</div>
+        <p class="hint">Green keywords appear on your resume; grey ones are frequent in the job post but missing.</p>
+      </div>
+      <div class="card">
+        <h2>How to improve</h2>
+        <ul class="plain">${r.suggestions.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>
+        ${r.quality ? qualityHtml(r.quality) : ""}
+      </div>
+    </div>
+    ${ai ? `<div class="card ai-card">
+      <h2>AI tailoring <span class="badge ai">${esc(PROVIDER_LABEL[ai.provider] || "AI")}</span></h2>
+      <p>${esc(ai.fit_summary)}</p>
+      ${ai.tailored_summary ? `<h3>Suggested resume summary</h3><blockquote id="jd-summary">${esc(ai.tailored_summary)}</blockquote><button class="btn ghost small no-print" data-copy="#jd-summary">Copy</button>` : ""}
+      ${ai.bullet_rewrites.length ? `<h3 style="margin-top:1rem">Stronger bullet points</h3>${ai.bullet_rewrites.map((b) => `<div class="rewrite"><div class="before">${esc(b.original)}</div><div class="after">${esc(b.improved)}</div></div>`).join("")}` : ""}
+      ${ai.tips.length ? `<h3 style="margin-top:1rem">Tips</h3><ul class="plain">${ai.tips.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>` : ""}
+    </div>` : r.ai_error ? `<div class="card"><p class="msg error">AI suggestions unavailable: ${esc(r.ai_error)}</p></div>` : ""}`;
 }
 
 // ---------- interview ----------
@@ -272,7 +477,8 @@ async function startInterview() {
       $("#interview-setup").hidden = true;
       $("#interview-live").hidden = false;
       $("#interview-report").innerHTML = "";
-      $("#iv-thread").innerHTML = `<div class="bubble"><b>${esc(s.title)} interview</b> · ${s.total} questions · ${s.mode === "claude" ? '<span class="badge ai">AI interviewer</span>' : '<span class="badge muted">Offline question bank</span>'}
+      state.interview.times = [];
+      $("#iv-thread").innerHTML = `<div class="bubble"><b>${esc(s.title)} interview</b> · ${s.total} questions · ${s.mode !== "offline" ? `<span class="badge ai">AI interviewer · ${esc(PROVIDER_LABEL[s.mode] || s.mode)}</span>` : '<span class="badge muted">Offline question bank</span>'}
         ${s.notices.map((n) => `<p class="hint">${esc(n)}</p>`).join("")}</div>`;
       askQuestion(s.question);
     } catch (e) {
@@ -290,6 +496,8 @@ function askQuestion(q) {
   $("#iv-answer").value = "";
   $("#iv-words").textContent = "0 words";
   $("#iv-answer-box").hidden = false;
+  startTimer();
+  speak(q.text);
   $("#iv-answer").focus({ preventScroll: true });
   $("#iv-answer-box").scrollIntoView({ behavior: "smooth", block: "end" });
 }
@@ -297,10 +505,11 @@ function askQuestion(q) {
 function feedbackHtml(ev) {
   const level = ev.score >= 7 ? "" : ev.score >= 4.5 ? "mid" : "low";
   return `<div class="bubble feedback ${level}">
-    <span class="score">${ev.score}/10</span> <span class="hint">${ev.evaluator === "claude" ? "AI feedback" : "Automatic feedback"}</span>
+    <span class="score">${ev.score}/10</span> <span class="hint">${ev.evaluator && ev.evaluator !== "offline" ? `AI feedback (${esc(PROVIDER_LABEL[ev.evaluator] || ev.evaluator)})` : "Automatic feedback"}</span>
+    ${ev.seconds !== undefined ? `<span class="hint">· answered in ${Math.floor(ev.seconds / 60)}:${String(ev.seconds % 60).padStart(2, "0")}</span>` : ""}
     ${ev.strengths.length ? `<div><b>What went well</b><ul>${ev.strengths.map((s) => `<li>${esc(s)}</li>`).join("")}</ul></div>` : ""}
     ${ev.improvements.length ? `<div><b>How to improve</b><ul>${ev.improvements.map((s) => `<li>${esc(s)}</li>`).join("")}</ul></div>` : ""}
-    ${ev.evaluator === "claude" && ev.missing_keywords.length ? `<div><b>Missed points</b><ul>${ev.missing_keywords.map((s) => `<li>${esc(s)}</li>`).join("")}</ul></div>` : ""}
+    ${ev.evaluator !== "offline" && ev.missing_keywords.length ? `<div><b>Missed points</b><ul>${ev.missing_keywords.map((s) => `<li>${esc(s)}</li>`).join("")}</ul></div>` : ""}
     ${ev.model_answer ? `<details><summary>See a strong answer</summary><p>${esc(ev.model_answer)}</p></details>` : ""}
   </div>`;
 }
@@ -308,10 +517,15 @@ function feedbackHtml(ev) {
 async function submitAnswer(skip = false) {
   const answer = skip ? "" : $("#iv-answer").value.trim();
   if (!skip && !answer) { toast("Type an answer or press Skip"); return; }
+  stopListening();
   const btn = $("#iv-submit");
+  if (btn.disabled) return;
+  const seconds = elapsedSeconds();
   await withBusy(btn, "Evaluating…", async () => {
     try {
       const r = await postJSON(`/api/interview/${state.interview.session_id}/answer`, { answer });
+      r.evaluation.seconds = seconds;
+      state.interview.times.push(seconds);
       $("#iv-thread").insertAdjacentHTML("beforeend", `<div class="bubble a">${answer ? esc(answer) : "<i>(skipped)</i>"}</div>${feedbackHtml(r.evaluation)}`);
       if (r.done) finishInterview();
       else askQuestion(r.next_question);
@@ -322,10 +536,15 @@ async function submitAnswer(skip = false) {
 }
 
 async function finishInterview() {
+  clearInterval(voice.timer);
   $("#iv-answer-box").hidden = true;
   $("#iv-progress").style.width = "100%";
   try {
     const rep = await api(`/api/interview/${state.interview.session_id}/report`);
+    recordHistory(rep);
+    renderHistory();
+    const times = state.interview.times;
+    const avgTime = times.length ? Math.round(times.reduce((a, b) => a + b, 0) / times.length) : 0;
     const cats = Object.entries(rep.category_scores).map(([k, v]) => metric(titleCase(k), v * 10)).join("");
     $("#interview-report").innerHTML = `
       <div class="card gap-hero">
@@ -333,6 +552,7 @@ async function finishInterview() {
         <div class="info">
           <h2>${esc(rep.verdict)} · ${esc(rep.title)}</h2>
           <p>${esc(rep.advice)}</p>
+          <p class="hint">Average answer time ${Math.floor(avgTime / 60)}:${String(avgTime % 60).padStart(2, "0")} (aim for 1-3 minutes per answer)</p>
           ${rep.strong_topics.length ? `<div><small class="hint">Strong topics</small><div class="chips">${chips(rep.strong_topics, "good")}</div></div>` : ""}
           ${rep.topics_to_improve.length ? `<div style="margin-top:.5rem"><small class="hint">Work on</small><div class="chips">${rep.resources.map((r) => `<a class="chip bad" href="${safeUrl(r.url)}" target="_blank" rel="noopener">${esc(r.skill)} ↗</a>`).join("")}</div></div>` : ""}
         </div>
@@ -343,6 +563,7 @@ async function finishInterview() {
           <div class="card-actions">
             <button class="btn secondary" data-gap="${esc(rep.career_id)}">View skill gap</button>
             <button class="btn primary" id="iv-again">New interview</button>
+            <button class="btn ghost" data-print>Save as PDF</button>
           </div>
         </div>
       </div>`;
@@ -368,6 +589,22 @@ function bind() {
     if (gap) { runGap(gap.dataset.gap); return; }
     const iv = e.target.closest("[data-interview]");
     if (iv) { openInterview(iv.dataset.interview); return; }
+    if (e.target.closest("[data-print]")) { window.print(); return; }
+    const copy = e.target.closest("[data-copy]");
+    if (copy) {
+      const text = $(copy.dataset.copy).textContent;
+      navigator.clipboard ? navigator.clipboard.writeText(text).then(() => toast("Copied"), () => toast("Copy failed")) : toast("Copy not supported");
+      return;
+    }
+    const wi = e.target.closest("[data-whatif]");
+    if (wi) {
+      wi.classList.toggle("on");
+      wi.setAttribute("aria-pressed", wi.classList.contains("on"));
+      clearTimeout(runWhatIf._t);
+      runWhatIf._t = setTimeout(runWhatIf, 250);
+      return;
+    }
+    if (e.target.id === "iv-clear-history") { saveJSON("interview-history", []); renderHistory(); return; }
     if (e.target.id === "iv-again") {
       $("#interview-setup").hidden = false;
       $("#interview-live").hidden = true;
@@ -432,6 +669,16 @@ function bind() {
   $("#iv-start").addEventListener("click", startInterview);
   $("#iv-submit").addEventListener("click", () => submitAnswer(false));
   $("#iv-skip").addEventListener("click", () => submitAnswer(true));
+  $("#iv-mic").addEventListener("click", toggleMic);
+  $("#jd-btn").addEventListener("click", runJobMatch);
+  $("#iv-tts").checked = loadJSON("tts", false);
+  $("#iv-tts").addEventListener("change", (e) => saveJSON("tts", e.target.checked));
+  if (SpeechRec) {
+    $("#iv-mic").hidden = false;
+    $("#iv-voice-hint").textContent = "Tip: use 🎤 Speak to answer out loud, like a real interview.";
+  } else {
+    $("#iv-voice-hint").textContent = "Voice answers need Chrome or Edge.";
+  }
   $("#iv-answer").addEventListener("input", (e) => {
     const n = e.target.value.trim() ? e.target.value.trim().split(/\s+/).length : 0;
     $("#iv-words").textContent = `${n} word${n === 1 ? "" : "s"}`;
@@ -453,9 +700,14 @@ async function init() {
     renderInterests();
     $("#experience").value = state.profile.experience_years || 0;
     $("#education").value = state.profile.education || "";
+    state.ai = health.ai;
     const badge = $("#engine-badge");
-    badge.textContent = health.interview_engine === "claude" ? "AI interviewer: on" : "Offline mode";
-    badge.className = `badge ${health.interview_engine === "claude" ? "ai" : "muted"}`;
+    badge.textContent = health.ai.provider ? `AI: ${health.ai.label}` : "Offline mode";
+    badge.title = health.ai.provider ? `Interviewer and resume tailoring use ${health.ai.model}` : (health.ai.note || "Add GEMINI_API_KEY to .env to enable the AI interviewer");
+    badge.className = `badge ${health.ai.provider ? "ai" : "muted"}`;
+    $("#jd-ai-wrap").hidden = !health.ai.provider;
+    $("#jd-source").textContent = health.ai.provider ? "" : "Add a Gemini API key to get AI tailoring suggestions.";
+    renderHistory();
   } catch (e) {
     toast("Could not reach the server: " + e.message);
   }

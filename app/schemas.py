@@ -38,3 +38,19 @@ class InterviewStartIn(BaseModel):
 
 class AnswerIn(BaseModel):
     answer: str = Field("", max_length=10_000)
+
+
+class WhatIfIn(BaseModel):
+    career_id: str
+    skills: list[str] = Field(default_factory=list, max_length=200)
+    add_skills: list[str] = Field(default_factory=list, max_length=50)
+    interests: list[str] = Field(default_factory=list, max_length=20)
+    experience_years: float = Field(0.0, ge=0, le=50)
+
+
+class JobMatchIn(BaseModel):
+    job_description: str = Field(..., min_length=30, max_length=50_000)
+    resume_text: str | None = Field(None, max_length=200_000)
+    skills: list[str] = Field(default_factory=list, max_length=200)
+    experience_years: float = Field(0.0, ge=0, le=50)
+    use_ai: bool = True

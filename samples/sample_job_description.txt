@@ -1,0 +1,21 @@
+Junior Machine Learning Engineer - Bengaluru (Hybrid)
+
+About the role
+We are looking for a Machine Learning Engineer to build and deploy models that power personalised recommendations for millions of shoppers.
+
+Responsibilities
+- Build, train and evaluate machine learning models for ranking and recommendations
+- Deploy models as scalable REST APIs using Docker and Kubernetes on AWS
+- Build data pipelines with Python, SQL and Spark
+- Monitor model performance in production and retrain on fresh data (MLOps)
+- Collaborate with product managers and data scientists in an agile team
+
+Requirements
+- Bachelor's degree in Computer Science or a related field
+- 0-2 years of experience (strong internships or projects welcome)
+- Strong Python, SQL and data structures & algorithms
+- Hands-on experience with scikit-learn and PyTorch or TensorFlow
+- Familiarity with Docker, Git and Linux
+- Good communication skills
+
+Nice to have: experience with recommendation systems, MLflow, Kafka, A/B testing.

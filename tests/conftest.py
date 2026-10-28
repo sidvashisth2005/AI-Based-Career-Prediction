@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 # Tests must never call the real Claude API and should not touch the repo's saved model.
-os.environ["LLM_MODE"] = "off"
+os.environ["LLM_PROVIDER"] = "off"
 os.environ.setdefault("MODEL_DIR", str(Path(__file__).parent / ".model-cache"))
 
 SAMPLE_RESUME = Path(__file__).resolve().parent.parent / "samples" / "sample_resume.txt"

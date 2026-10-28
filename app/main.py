@@ -10,10 +10,14 @@ from fastapi.staticfiles import StaticFiles
 from . import __version__, config, knowledge
 from .gap_analyzer import analyze_gap
 from .interview import engine, llm
+from .job_match import analyze_job_match
 from .predictor import CareerPredictor, Profile
 from .resume_parser import ResumeError, extract_text, parse_resume
-from .schemas import AnswerIn, GapIn, InterviewStartIn, PredictIn
-from .skill_extractor import normalize_skills
+from .resume_quality import assess_resume
+from .schemas import AnswerIn, GapIn, InterviewStartIn, JobMatchIn, PredictIn, WhatIfIn
+from .skill_extractor import extract_skills, normalize_skills
+
+MAX_RESUME_TEXT = 200_000
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 
@@ -46,8 +50,8 @@ def health():
     return {
         "status": "ok",
         "version": __version__,
-        "interview_engine": "claude" if llm.enabled() else "offline",
-        "claude_model": config.CLAUDE_MODEL if llm.enabled() else None,
+        "interview_engine": llm.provider() or "offline",
+        "ai": llm.status(),
         "model_metrics": predictor().metrics,
     }
 
@@ -91,7 +95,11 @@ async def parse_resume_endpoint(file: UploadFile | None = File(None), text: str 
             raise HTTPException(422, str(exc)) from exc
     else:
         resume_text = text
-    return parse_resume(resume_text)
+    if len(resume_text) > MAX_RESUME_TEXT:
+        raise HTTPException(413, "Resume text is too long")
+    parsed = parse_resume(resume_text)
+    parsed["quality"] = assess_resume(resume_text, parsed["skills"])
+    return parsed
 
 
 @app.post("/api/predict")
@@ -112,6 +120,55 @@ def gap(body: GapIn):
     except KeyError:
         raise HTTPException(404, "Unknown career") from None
     return {**report, "unrecognized_skills": unknown}
+
+
+@app.post("/api/whatif")
+def what_if(body: WhatIfIn):
+    """Simulate learning new skills: readiness and career ranking before and after."""
+    skills, _ = normalize_skills(body.skills)
+    added, _ = normalize_skills(body.add_skills)
+    added = [s for s in added if s not in skills]
+    interests = [i.lower() for i in body.interests if i.lower() in knowledge.INTERESTS]
+    if knowledge.get_career(body.career_id) is None:
+        raise HTTPException(404, "Unknown career")
+
+    def snapshot(skill_list):
+        gap_report = analyze_gap(body.career_id, skill_list, body.experience_years)
+        ranking = predictor().predict(Profile(skill_list, interests, body.experience_years), top_k=3)
+        rank = next(i for i, r in enumerate(ranking["all"], 1) if r["career_id"] == body.career_id)
+        fit = next(r["fit_score"] for r in ranking["all"] if r["career_id"] == body.career_id)
+        return {
+            "readiness": gap_report["readiness"],
+            "readiness_label": gap_report["readiness_label"],
+            "remaining_weeks": gap_report["estimated_weeks"],
+            "missing_core": [m["requirement"] for m in gap_report["missing_core"]],
+            "fit_score": fit,
+            "rank": rank,
+            "top": [{"career_id": r["career_id"], "title": r["title"], "fit_score": r["fit_score"]} for r in ranking["suited"]],
+        }
+
+    before, after = snapshot(skills), snapshot(skills + added)
+    return {"career_id": body.career_id, "added_skills": added, "before": before, "after": after,
+            "learning_weeks": sum(knowledge.skill_info(s)["weeks"] for s in added)}
+
+
+@app.post("/api/jobmatch")
+def job_match(body: JobMatchIn):
+    """Compare a resume against a job description; optionally add AI tailoring advice."""
+    skills, _ = normalize_skills(body.skills)
+    resume_text = body.resume_text or ""
+    if not resume_text.strip() and not skills:
+        raise HTTPException(400, "Upload a resume or add skills on the Profile step first")
+    result = analyze_job_match(body.job_description, resume_text, skills, body.experience_years, predictor())
+    result["quality"] = assess_resume(resume_text, extract_skills(resume_text)) if resume_text.strip() else None
+    result["ai"] = None
+    result["ai_error"] = None
+    if body.use_ai and llm.enabled():
+        try:
+            result["ai"] = llm.tailor_resume(body.job_description, resume_text or ", ".join(skills), result)
+        except llm.LLMError as exc:
+            result["ai_error"] = str(exc)
+    return result
 
 
 @app.post("/api/interview/start")

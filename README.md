@@ -1,13 +1,23 @@
 # AI-Based Career Prediction
 
-A web app that reads your resume and helps you choose and prepare for a career. It has four parts:
+A web app that reads your resume and helps you choose and prepare for a career.
+
+**Core features**
 
 1. **Career prediction.** Ranks 24 career fields by how well they suit your skills, interests and experience.
 2. **Available and suited fields.** Shows your top matches with the reasons behind each one, plus a table of every field with its fit score, demand outlook and indicative salary.
 3. **Skill gap for a specific field.** Pick any field to see which required skills you have and which you lack, a readiness score, a phased learning roadmap with free resources, project ideas and certifications.
 4. **Mock interview.** Questions are based on the field you pick and your resume. They check skills you claim, probe required skills you lack, ask about your own projects, and include an on-the-job scenario and a behavioral question. Each answer is scored with feedback and a model answer, and you get a final report.
 
-It runs fully offline. If you add an Anthropic API key, Claude writes personalised interview questions from your resume and grades answers against a rubric.
+**Extra features**
+
+5. **Job description match (ATS check).** Paste any job posting to get an ATS-style match score, the skills and keywords from the job that your resume is missing, warnings about experience or degree requirements, and a guess at which career the job belongs to. With an AI key you also get a tailored resume summary and rewritten bullet points.
+6. **Resume health score.** Every uploaded resume is scored out of 100 on ATS and recruiter best practices: contact details, sections, action verbs, quantified impact, length and weak phrases. Each failed check comes with a specific tip.
+7. **"What if I learn…?" simulator.** On the skill-gap page, tick the skills you plan to learn and instantly see how your readiness, your rank for that career and your top career matches would change, and how long it would take.
+8. **Voice interview mode.** Answer by speaking (🎤, in Chrome or Edge) and optionally have questions read aloud. A timer shows how long each answer takes.
+9. **Progress tracking and PDF export.** Your interview scores are saved in your browser and shown as a trend. Gap reports, job-match reports and interview reports can be saved as PDF.
+
+It runs fully offline. If you add a **Gemini API key** (or an Anthropic key), the AI writes personalised interview questions from your resume, grades answers against a rubric and tailors your resume to job descriptions.
 
 ## Quick start
 
@@ -19,18 +29,26 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-Open http://localhost:8000. To try it quickly, upload `samples/sample_resume.txt`.
+Open http://localhost:8000. To try it quickly, upload `samples/sample_resume.pdf` (or `.txt`), and on the Job match step paste `samples/sample_job_description.txt`.
 
 The ML model trains automatically the first time the app starts (it takes a few seconds). To retrain it by hand, run `python -m scripts.train_model`.
 
-### Optional: AI interviewer with Claude
+### Turn on the AI interviewer with Gemini
 
-```bash
-cp .env.example .env
-# then set ANTHROPIC_API_KEY=... in .env
-```
+1. Get a free API key from Google AI Studio: https://aistudio.google.com/apikey
+2. Copy the example settings file:
+   ```bash
+   cp .env.example .env        # Windows: copy .env.example .env
+   ```
+3. Open `.env` and replace the placeholder on this line with your key:
+   ```
+   GEMINI_API_KEY=paste-your-gemini-api-key-here
+   ```
+4. Restart the app. The header badge changes from **Offline mode** to **AI: Gemini**.
 
-The header badge shows **AI interviewer: on** when this is active. If a Claude call fails, the app falls back to the offline engine for that step, so an interview never breaks halfway through.
+The default model is `gemini-flash-latest`, which always points to Google's newest Flash model. To pin a specific model, set `GEMINI_MODEL` in `.env`. Claude is also supported: set `ANTHROPIC_API_KEY`, and use `LLM_PROVIDER=claude` if both keys are present (Gemini is preferred by default).
+
+If an AI call fails (wrong key, no internet, quota exceeded), the app falls back to the offline engine for that step and shows the reason, so an interview never breaks halfway through. `.env` is in `.gitignore`, so your key is never committed.
 
 ### Docker
 
@@ -66,7 +84,9 @@ Manual skills + interests ──────┤
 | Prediction model | `app/predictor.py` | Multinomial logistic regression over a multi-hot vector of skills and interests, trained on 9,600 synthetic profiles sampled from the knowledge base. Holdout accuracy is about 93% top-1 and 98% top-3 |
 | Fit score | `app/predictor.py` | 55% weighted skill coverage + 25% ML confidence + 20% interest match. Without interests it is 65% / 35%. Each match shows its reasons |
 | Gap analysis | `app/gap_analyzer.py` | Ranks missing skills by priority, recommends the quickest option for "any of" requirements, and builds a phased roadmap with time estimates |
-| Interview | `app/interview/` | `offline.py` plans questions and scores answers by key-point coverage, depth and structure (STAR for behavioral). `llm.py` uses Claude with JSON-schema structured outputs. `engine.py` handles sessions and the report |
+| Interview | `app/interview/` | `offline.py` plans questions and scores answers by key-point coverage, depth and structure (STAR for behavioral), capping off-topic answers. `llm.py` calls Gemini or Claude with JSON-schema structured outputs. `engine.py` handles sessions and the report |
+| Job match | `app/job_match.py` | Compares job skills and repeated job keywords with the resume (70% / 30%), flags experience and degree gaps, and runs the career model on the job's skills to name the role |
+| Resume health | `app/resume_quality.py` | Ten weighted checks for ATS-friendliness and recruiter best practices |
 | Web UI | `frontend/` | Plain HTML, CSS and JS with no build step. Supports light and dark mode and works on phones |
 
 ### Training data
@@ -88,6 +108,8 @@ Interactive docs are at http://localhost:8000/docs.
 | POST | `/api/interview/start` | `{career_id, profile, num_questions, difficulty}` → first question |
 | POST | `/api/interview/{id}/answer` | `{answer}` → evaluation and next question |
 | GET | `/api/interview/{id}/report` | Final interview report |
+| POST | `/api/jobmatch` | `{job_description, resume_text, skills, use_ai}` → ATS match, gaps and AI tailoring |
+| POST | `/api/whatif` | `{career_id, skills, add_skills}` → readiness and ranking before and after learning |
 
 Example:
 
@@ -103,16 +125,19 @@ pip install -r requirements-dev.txt
 pytest
 ```
 
-The tests cover the knowledge base, skill extraction and its false-positive cases, resume parsing, prediction quality, gap analysis, the interview flow, all API endpoints, and the Claude integration (against a mocked HTTP transport, so no key or network is needed).
+The tests cover the knowledge base, skill extraction and its false-positive cases, resume parsing (TXT, DOCX and a real PDF), prediction quality, gap analysis, the interview flow and scoring, resume health, job matching, the what-if simulator, all API endpoints, and both AI integrations. The Gemini and Claude tests run against mocked HTTP transports, so no key or network is needed.
 
 ## Configuration
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | not set | Turns on the Claude interviewer |
-| `LLM_MODE` | `auto` | `auto`, `on` or `off` |
-| `CLAUDE_MODEL` | `claude-opus-5-5` | Model used for questions and grading |
+| `GEMINI_API_KEY` | placeholder | Turns on the AI interviewer and resume tailoring with Gemini |
+| `GEMINI_MODEL` | `gemini-flash-latest` | Gemini model |
+| `ANTHROPIC_API_KEY` | placeholder | Alternative provider: Claude |
+| `CLAUDE_MODEL` | `claude-opus-5-5` | Claude model |
 | `CLAUDE_EFFORT` | `medium` | `low`, `medium` or `high` |
+| `LLM_PROVIDER` | `auto` | `auto` (Gemini, then Claude, then offline), `gemini`, `claude` or `off` |
+| `LLM_TIMEOUT_SECONDS` | `120` | Timeout for each AI call |
 | `MAX_UPLOAD_MB` | `5` | Resume upload limit |
 | `SESSION_TTL_MINUTES` | `120` | How long interview sessions are kept |
 
@@ -121,7 +146,9 @@ The tests cover the knowledge base, skill extraction and its false-positive case
 - Salary ranges (INR LPA) and demand outlook are indicative and hand-curated. They are not live market data.
 - Scanned (image-only) PDFs are not supported because there is no OCR. Use a text-based PDF, a DOCX file, or paste the text.
 - Interview sessions are stored in memory. Run a single worker, or move sessions to Redis for multi-worker deployments.
-- Without Claude, answers are scored by key-point coverage and structure. This is useful for practice but it cannot judge correctness the way a human or an LLM can.
+- Without an AI key, answers are scored by key-point coverage and structure. This is useful for practice but it cannot judge correctness the way a human or an LLM can.
+- Voice answers use the browser's built-in speech recognition, which works in Chrome and Edge but not Firefox. In Chrome the audio is processed by Google's speech service.
+- The job-match score is an approximation of how ATS software ranks resumes; real ATS products differ from each other.
 
 ## Project structure
 
@@ -132,12 +159,14 @@ app/
   knowledge.py         Loads the JSON knowledge base
   skill_extractor.py   Skill detection and normalisation
   resume_parser.py     PDF/DOCX/TXT → profile
+  resume_quality.py    Resume health score
+  job_match.py         Job description match (ATS check)
   predictor.py         ML model and fit scoring
   gap_analyzer.py      Skill gap and roadmap
   interview/           offline.py, llm.py, engine.py
   data/                careers.json, skills.json, questions.json
 frontend/              index.html, styles.css, app.js
 scripts/train_model.py
-samples/sample_resume.txt
+samples/             sample resume (PDF + TXT) and job description
 tests/
 ```

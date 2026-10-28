@@ -53,3 +53,22 @@ def test_extract_text_from_docx():
     d.save(buf)
     text = extract_text("cv.docx", buf.getvalue())
     assert {"Python", "Django", "PostgreSQL"} <= set(extract_skills(text))
+
+
+def test_extract_text_from_real_pdf(resume_text):
+    from pathlib import Path
+
+    pdf = Path(__file__).resolve().parent.parent / "samples" / "sample_resume.pdf"
+    parsed = parse_resume(extract_text("resume.pdf", pdf.read_bytes()))
+    assert parsed["skills"] == parse_resume(resume_text)["skills"]
+    assert parsed["projects"][:3] == ["Crop Yield Predictor", "Resume Screener", "Campus Event App"]
+
+
+def test_pdf_upload_via_api(client):
+    from pathlib import Path
+
+    pdf = Path(__file__).resolve().parent.parent / "samples" / "sample_resume.pdf"
+    r = client.post("/api/resume/parse", files={"file": ("resume.pdf", pdf.read_bytes(), "application/pdf")})
+    assert r.status_code == 200 and r.json()["education"] == "Bachelors"
+    bad = client.post("/api/resume/parse", files={"file": ("broken.pdf", b"%PDF-1.4 not really a pdf", "application/pdf")})
+    assert bad.status_code == 422
