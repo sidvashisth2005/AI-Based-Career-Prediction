@@ -65,7 +65,15 @@ Notes for serverless hosting, already handled in the code:
 - Vercel rejects request bodies over 4.5 MB, so resume uploads are limited to 4 MB.
 - scikit-learn and scipy are not used, which keeps the function bundle small and cold starts fast. The model runs in NumPy.
 
-If a deployment still fails, open the deployment in Vercel, go to **Logs** and look for the Python traceback.
+To check every service of a deployment, run the smoke test from your computer (it uses only Python's standard library):
+
+```bash
+python -m scripts.smoke_test https://<your-app>.vercel.app
+```
+
+It uploads the sample resume (TXT and PDF), then runs prediction, skill gap, what-if, job match, a full mock interview, the web UI and input validation, and prints PASS/FAIL for each. It also reports whether Gemini is connected, or why it fell back to offline mode.
+
+If a deployment still fails, open the deployment in Vercel, go to **Logs** and look for the Python traceback. If AI requests time out (HTTP 504), raise the function's maximum duration in the Vercel project settings.
 
 ### Docker
 
@@ -140,6 +148,8 @@ curl -s localhost:8000/api/predict -H 'Content-Type: application/json' \
 ```bash
 pip install -r requirements-dev.txt
 pytest
+# against a running server (local or deployed):
+python -m scripts.smoke_test http://localhost:8000
 ```
 
 The tests cover the knowledge base, skill extraction and its false-positive cases, resume parsing (TXT, DOCX and a real PDF), prediction quality, gap analysis, the interview flow and scoring, resume health, job matching, the what-if simulator, all API endpoints, and both AI integrations. The Gemini and Claude tests run against mocked HTTP transports, so no key or network is needed.
