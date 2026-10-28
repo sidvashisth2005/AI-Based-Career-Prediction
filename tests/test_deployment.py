@@ -83,3 +83,39 @@ def test_pyproject_matches_requirements():
     assert project["project"]["dependencies"] == reqs
     assert project["tool"]["vercel"]["entrypoint"] == "app.main:app"
     assert not any(re.match(r"scikit-learn|scipy|joblib", r) for r in reqs)  # keep the bundle small
+
+
+def test_api_works_without_public_folder(tmp_path, monkeypatch):
+    """On Vercel, public/ is served by the CDN and is absent from the function bundle."""
+    import shutil
+    import subprocess
+    import sys
+
+    bundle = tmp_path / "bundle"
+    shutil.copytree(ROOT / "app", bundle / "app", ignore=shutil.ignore_patterns("__pycache__"))
+    shutil.copytree(ROOT / "models", bundle / "models")
+    code = ("from fastapi.testclient import TestClient\n"
+            "from app.main import app\n"
+            "c = TestClient(app)\n"
+            "assert c.get('/api/meta').status_code == 200\n"
+            "r = c.post('/api/resume/parse', files={'file': ('cv.txt', b'Skills: Python, SQL, Docker', 'text/plain')})\n"
+            "assert r.status_code == 200 and 'Python' in r.json()['skills'], r.text\n"
+            "print('ok')\n")
+    env = {**__import__("os").environ, "LLM_PROVIDER": "off", "PYTHONDONTWRITEBYTECODE": "1"}
+    env.pop("MODEL_DIR", None)
+    out = subprocess.run([sys.executable, "-c", code], cwd=bundle, env=env, capture_output=True, text=True, timeout=120)
+    assert out.returncode == 0 and "ok" in out.stdout, out.stderr[-2000:]
+
+
+def test_unexpected_errors_return_json(client, monkeypatch):
+    from app import main
+
+    def boom(*_args, **_kwargs):
+        raise ValueError("simulated failure")
+
+    monkeypatch.setattr(main, "parse_resume", boom)
+    from fastapi.testclient import TestClient
+
+    with TestClient(main.app, raise_server_exceptions=False) as c:
+        r = c.post("/api/resume/parse", data={"text": "Python developer"})
+    assert r.status_code == 500 and "simulated failure" in r.json()["detail"]

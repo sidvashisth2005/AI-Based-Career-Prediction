@@ -11,7 +11,8 @@ _ROOT = str(Path(__file__).resolve().parent.parent)
 if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app import __version__, config, knowledge
@@ -27,6 +28,7 @@ from app.skill_extractor import extract_skills, normalize_skills
 MAX_RESUME_TEXT = 200_000
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+log = logging.getLogger("app")
 
 _predictor: CareerPredictor | None = None
 
@@ -50,6 +52,13 @@ app = FastAPI(
     description="Predict suitable careers, analyse skill gaps and practise mock interviews based on your resume.",
     lifespan=lifespan,
 )
+
+
+@app.exception_handler(Exception)
+async def unexpected_error(request: Request, exc: Exception):
+    """Return a readable JSON error instead of a bare 500 page, and log the traceback."""
+    log.exception("Unhandled error on %s %s", request.method, request.url.path)
+    return JSONResponse(status_code=500, content={"detail": f"Server error: {type(exc).__name__}: {exc}"[:300]})
 
 
 @app.get("/api/health")
@@ -228,4 +237,7 @@ def interview_report(session_id: str):
 
 
 # The web UI (index.html, app.js, styles.css). Mounted last so it never shadows /api or /docs.
-app.mount("/", StaticFiles(directory=config.PUBLIC_DIR, html=True), name="ui")
+# On Vercel, public/ is served by the CDN and is not part of the Python function bundle, so
+# only mount it when it is present (mounting a missing folder would crash every API route).
+if config.PUBLIC_DIR.is_dir():
+    app.mount("/", StaticFiles(directory=config.PUBLIC_DIR, html=True), name="ui")
