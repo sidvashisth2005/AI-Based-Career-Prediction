@@ -104,7 +104,7 @@ Manual skills + interests ──────┤
 | Interview | `app/interview/` | `offline.py` plans questions and scores answers by key-point coverage, depth and structure (STAR for behavioral), capping off-topic answers. `llm.py` calls Gemini or Claude with JSON-schema structured outputs. `engine.py` handles sessions and the report |
 | Job match | `app/job_match.py` | Compares job skills and repeated job keywords with the resume (70% / 30%), flags experience and degree gaps, and runs the career model on the job's skills to name the role |
 | Resume health | `app/resume_quality.py` | Ten weighted checks for ATS-friendliness and recruiter best practices |
-| Web UI | `public/` | Plain HTML, CSS and JS with no build step. Supports light and dark mode and works on phones |
+| Web UI | `public/` | "Career Compass": plain HTML, CSS and JS with no build step. Navy-and-neutral palette (WCAG AA contrast), IBM Plex Sans, light and dark mode, works on phones |
 
 ### Training data
 

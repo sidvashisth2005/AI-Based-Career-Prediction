@@ -3,15 +3,18 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AI Career Predictor</title>
+  <title>Career Compass</title>
   <meta name="description" content="Predict suitable careers, find your skill gaps, match job descriptions and practise mock interviews based on your resume.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15.5 8.5l-2 5-5 2 2-5z" fill="currentColor"/></svg>
-      <span>AI Career Predictor</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M15.8 8.2l-2.3 5.3-5.3 2.3 2.3-5.3z" fill="currentColor"/></svg>
+      <span>Career Compass</span>
     </div>
     <nav class="steps" role="tablist">
       <button class="step active" data-view="profile" role="tab"><b>1</b> Profile</button>
@@ -20,7 +23,7 @@
       <button class="step" data-view="interview" role="tab"><b>4</b> Mock interview</button>
       <button class="step" data-view="jobmatch" role="tab"><b>5</b> Job match</button>
     </nav>
-    <span id="engine-badge" class="badge muted" title="Interview engine">…</span>
+    <span id="engine-badge" class="badge muted" title="Interview engine"></span>
   </header>
 
   <main>
@@ -127,7 +130,7 @@
           <div class="row between">
             <small class="hint"><span id="iv-words">0 words</span> · <span id="iv-timer" class="timer">0:00</span></small>
             <div>
-              <button id="iv-mic" class="btn ghost" hidden title="Answer by speaking (Chrome / Edge)">🎤 Speak</button>
+              <button id="iv-mic" class="btn ghost" hidden title="Answer by speaking (Chrome / Edge)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 11a6.5 6.5 0 0013 0M12 17.5V21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Dictate</span></button>
               <button id="iv-skip" class="btn ghost">Skip</button>
               <button id="iv-submit" class="btn primary">Submit answer</button>
             </div>
@@ -146,7 +149,7 @@
           <textarea id="jd-text" rows="9" placeholder="Paste the full job description here"></textarea>
         </label>
         <div class="row between wrap-sm">
-          <label class="check" id="jd-ai-wrap" hidden><input type="checkbox" id="jd-ai" checked> Get AI tailoring suggestions</label>
+          <label class="check" id="jd-ai-wrap" hidden><input type="checkbox" id="jd-ai" checked> Include tailoring suggestions</label>
           <span class="hint" id="jd-source"></span>
           <button id="jd-btn" class="btn primary">Check match</button>
         </div>
@@ -155,7 +158,7 @@
     </section>
   </main>
 
-  <footer class="no-print">Predictions and salary ranges are indicative guidance, not guarantees. <a href="/docs">API docs</a></footer>
+  <footer class="no-print">Career Compass · Salary ranges and demand ratings are indicative guidance, not guarantees. · <a href="/docs">API documentation</a></footer>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="/app.js"></script>
 </body>
