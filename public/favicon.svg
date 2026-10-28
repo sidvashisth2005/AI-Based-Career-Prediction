@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Career Compass">
+  <title>Career Compass</title>
+  <rect width="64" height="64" rx="14" fill="#1f4e79"/>
+  <!-- an open "C" (Career) with the compass needle pointing out through the gap: the way forward -->
+  <path d="M49.73 28.87 A18 18 0 1 1 35.13 14.27" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/>
+  <path d="M50.4 13.6 L34.97 34.97 L29.03 29.03 Z" fill="#ffffff"/>
+  <path d="M22.1 41.9 L29.03 29.03 L34.97 34.97 Z" fill="#8fb4dc"/>
+  <circle cx="32" cy="32" r="2.6" fill="#1f4e79"/>
+</svg>

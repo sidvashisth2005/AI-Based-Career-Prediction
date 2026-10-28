@@ -12,7 +12,7 @@ if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from app import __version__, config, knowledge
@@ -22,7 +22,8 @@ from app.job_match import analyze_job_match
 from app.predictor import CareerPredictor, Profile
 from app.resume_parser import ResumeError, extract_text, parse_resume
 from app.resume_quality import assess_resume
-from app.schemas import AnswerIn, GapIn, InterviewStartIn, JobMatchIn, PredictIn, ReportIn, WhatIfIn
+from app import voice
+from app.schemas import AnswerIn, GapIn, InterviewStartIn, JobMatchIn, PredictIn, ReportIn, SpeakIn, WhatIfIn
 from app.skill_extractor import extract_skills, normalize_skills
 
 MAX_RESUME_TEXT = 200_000
@@ -67,7 +68,8 @@ def health():
         "status": "ok",
         "version": __version__,
         "interview_engine": llm.provider() or "offline",
-        "ai": llm.status(),
+        "ai": {**llm.status(), "speech": voice.available(), "transcription": voice.available(),
+               "voices": voice.VOICES if voice.available() else {}, "default_voice": config.GEMINI_TTS_VOICE},
         "model_metrics": predictor().metrics,
     }
 
@@ -185,6 +187,36 @@ def job_match(body: JobMatchIn):
         except llm.LLMError as exc:
             result["ai_error"] = str(exc)
     return result
+
+
+@app.post("/api/speak", responses={200: {"content": {"audio/wav": {}}}})
+def speak(body: SpeakIn):
+    """The interviewer's voice: natural-sounding speech from Gemini (WAV)."""
+    if not voice.available():
+        raise HTTPException(503, "Natural voice needs GEMINI_API_KEY; the browser voice is used instead")
+    try:
+        audio = voice.speak(body.text, body.voice)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+    except llm.LLMError as exc:
+        raise HTTPException(502, f"Voice unavailable: {exc}") from exc
+    return Response(audio, media_type="audio/wav", headers={"Cache-Control": "private, max-age=3600"})
+
+
+@app.post("/api/transcribe")
+def transcribe(file: UploadFile = File(...)):
+    """Dictation fallback for browsers without a working speech service: audio in, text out."""
+    if not voice.available():
+        raise HTTPException(503, "Dictation in this browser needs GEMINI_API_KEY on the server")
+    # A plain (sync) endpoint: FastAPI runs it in a worker thread, so the Gemini call does not block.
+    data = file.file.read(voice.MAX_AUDIO_BYTES + 1)
+    try:
+        text = voice.transcribe(data, file.content_type or "audio/wav")
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+    except llm.LLMError as exc:
+        raise HTTPException(502, f"Transcription failed: {exc}") from exc
+    return {"text": text}
 
 
 @app.post("/api/interview/start")

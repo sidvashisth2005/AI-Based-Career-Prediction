@@ -48,6 +48,11 @@ def secret(name: str) -> str | None:
 LLM_PROVIDER = (os.getenv("LLM_PROVIDER") or os.getenv("LLM_MODE") or "auto").lower()
 
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-flash-latest")
+# Text-to-speech for the interviewer's voice. Preview TTS models get renamed, so the app falls
+# back to the older ID automatically and finally to the browser's own voice.
+GEMINI_TTS_MODEL = os.getenv("GEMINI_TTS_MODEL", "gemini-3.1-flash-tts-preview")
+GEMINI_TTS_FALLBACK_MODEL = "gemini-2.5-flash-preview-tts"
+GEMINI_TTS_VOICE = os.getenv("GEMINI_TTS_VOICE", "Sulafat")
 CLAUDE_MODEL = os.getenv("CLAUDE_MODEL", "claude-opus-5-5")
 CLAUDE_EFFORT = os.getenv("CLAUDE_EFFORT", "medium")
 LLM_TIMEOUT_SECONDS = float(os.getenv("LLM_TIMEOUT_SECONDS", "120"))

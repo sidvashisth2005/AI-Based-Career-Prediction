@@ -324,27 +324,152 @@ async function runWhatIf() {
   }
 }
 
-// ---------- voice + timer ----------
+// ---------- interviewer voice ----------
+// Speech: Gemini's natural voices when the server has a key, otherwise the most natural voice the
+// browser offers, spoken sentence by sentence at a relaxed pace.
 const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-const voice = { rec: null, listening: false, timer: null, started: 0 };
+const voice = {
+  rec: null, listening: false, mode: null, speechFailed: loadJSON("speech-service-broken", false), fallbackPending: false,
+  recorder: null, stream: null, chunks: [], autoStop: null,
+  timer: null, started: 0, audio: null, token: 0, browserVoices: [], warnedNatural: false,
+};
+const SAMPLE_LINE = "Hi, I'll be your interviewer today. Take your time with each answer, there's no rush.";
 
-function speak(text) {
-  if (!$("#iv-tts").checked || !("speechSynthesis" in window)) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = "en-IN";
-  u.rate = 1;
-  window.speechSynthesis.speak(u);
+// Short spoken transitions, like a real interviewer uses between questions.
+function leadIn(q) {
+  const pick = (options) => options[(q.index * 7 + q.total) % options.length];
+  if (q.index === 0) return "Hi, thanks for making the time today. Let's start with a little about you.";
+  if (q.index === q.total - 1) return pick(["Okay, last one.", "Great, we're nearly done. One final question.", "Alright, final question, and this one's more about how you work."]);
+  if (q.category === "project") return pick(["I'd love to hear about something you've built.", "Let's talk about your projects for a bit."]);
+  if (q.category === "scenario") return pick(["Let me give you a situation you might run into on the job.", "Here's a scenario for you."]);
+  if (q.category === "behavioral") return pick(["Let's switch gears a little.", "Now something about how you work with people."]);
+  return pick(["Thanks. Next one.", "Okay, good. Moving on.", "Alright, let's get a bit more technical.", "Got it, thank you.",
+    q.skill ? `Let's talk about ${q.skill} for a moment.` : "Okay, next question."]);
 }
 
-function stopListening() {
-  if (voice.rec && voice.listening) voice.rec.stop();
+function rankBrowserVoice(v) {
+  const name = `${v.name} ${v.voiceURI}`;
+  let score = 0;
+  if (/natural|neural/i.test(name)) score += 60;          // Edge "Online (Natural)" voices
+  if (/premium|enhanced|siri/i.test(name)) score += 45;   // Apple's higher-quality voices
+  if (/^Google/i.test(v.name)) score += 35;               // Chrome's network voices
+  if (/online/i.test(name)) score += 10;
+  if (/^en-IN/i.test(v.lang)) score += 8;
+  else if (/^en-(GB|US|AU)/i.test(v.lang)) score += 5;
+  if (/compact|espeak|robot|novelty|whisper|zarvox|bad news|bells|trinoids|albert/i.test(name)) score -= 80;
+  return score;
+}
+
+function loadBrowserVoices() {
+  if (!("speechSynthesis" in window)) return [];
+  voice.browserVoices = window.speechSynthesis.getVoices()
+    .filter((v) => /^en(-|_|$)/i.test(v.lang))
+    .sort((a, b) => rankBrowserVoice(b) - rankBrowserVoice(a));
+  return voice.browserVoices;
+}
+
+function chosenBrowserVoice() {
+  const value = $("#iv-voice").value || "";
+  if (value.startsWith("browser:")) {
+    const found = voice.browserVoices.find((v) => v.voiceURI === value.slice(8));
+    if (found) return found;
+  }
+  return voice.browserVoices[0] || null;
+}
+
+function stopSpeaking() {
+  voice.token++;
+  if (voice.audio) { voice.audio.pause(); voice.audio = null; }
+  if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+}
+
+function speakWithBrowser(text) {
+  if (!("speechSynthesis" in window)) return;
+  const v = chosenBrowserVoice();
+  // One utterance per sentence gives natural pauses and avoids Chrome cutting off long speech.
+  for (const sentence of text.match(/[^.!?]+[.!?]*/g) || [text]) {
+    const u = new SpeechSynthesisUtterance(sentence.trim());
+    if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = "en-IN"; }
+    u.rate = 0.95;
+    u.pitch = 1;
+    window.speechSynthesis.speak(u);
+  }
+}
+
+async function speak(text, force = false) {
+  stopSpeaking();
+  if (!force && !$("#iv-tts").checked) return;
+  const token = voice.token;
+  const choice = $("#iv-voice").value || "";
+  if (state.ai.speech && !choice.startsWith("browser")) {
+    try {
+      const res = await fetch("/api/speak", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text, voice: choice }) });
+      if (!res.ok) throw new Error(((await res.json().catch(() => ({}))).detail) || `HTTP ${res.status}`);
+      const url = URL.createObjectURL(await res.blob());
+      if (token !== voice.token) { URL.revokeObjectURL(url); return; }   // a newer question started
+      const audio = new Audio(url);
+      audio.onended = () => URL.revokeObjectURL(url);
+      voice.audio = audio;
+      await audio.play();
+      return;
+    } catch (e) {
+      if (token !== voice.token) return;
+      if (!voice.warnedNatural) { toast("Natural voice unavailable, using the browser voice instead."); voice.warnedNatural = true; }
+      console.warn("Natural voice failed:", e);
+    }
+  }
+  speakWithBrowser(text);
+}
+
+function fillVoiceOptions() {
+  const select = $("#iv-voice");
+  const saved = loadJSON("voice", "");
+  const opts = [];
+  if (state.ai.speech) {
+    for (const [name, style] of Object.entries(state.ai.voices || {})) opts.push([name, `${name} (${style.toLowerCase()})`]);
+    opts.push(["browser", "Browser voice"]);
+  } else {
+    opts.push(["browser", "Best available"]);
+    for (const v of loadBrowserVoices().slice(0, 8)) opts.push([`browser:${v.voiceURI}`, `${v.name.replace(/^Microsoft /, "")} (${v.lang})`]);
+  }
+  select.innerHTML = opts.map(([value, label]) => `<option value="${esc(value)}">${esc(label)}</option>`).join("");
+  const fallback = state.ai.speech ? (state.ai.default_voice || opts[0][0]) : "browser";
+  select.value = opts.some(([value]) => value === saved) ? saved : fallback;
+}
+
+// ---------- dictation ----------
+// The browser's speech service where it works (Chrome, Edge); otherwise record the answer and have
+// the server transcribe it (needs a Gemini key). Brave, Opera, Vivaldi and Firefox use the fallback.
+function setMicUi(on, label) {
+  const btn = $("#iv-mic");
+  btn.classList.toggle("recording", on);
+  btn.querySelector("span").textContent = label || (on ? "Stop" : "Dictate");
+}
+
+function micAvailable() {
+  return Boolean((SpeechRec && !voice.speechFailed) || (state.ai.transcription && navigator.mediaDevices && window.MediaRecorder));
 }
 
 function toggleMic() {
-  if (!SpeechRec) return;
-  if (voice.listening) { stopListening(); return; }
+  if (voice.listening) { stopDictation(); return; }
+  stopSpeaking();
+  if (SpeechRec && !voice.speechFailed) startBrowserDictation();
+  else if (state.ai.transcription) startRecording();
+  else toast("Dictation isn't available in this browser. Use Chrome or Edge, or ask the site owner to add a Gemini API key.");
+}
+
+function browserSpeechFailed(reason) {
+  // Remember it for this browser, so next time Dictate goes straight to recording.
+  voice.speechFailed = true;
+  saveJSON("speech-service-broken", true);
+  if (state.ai.transcription) return true;
+  toast(`Your browser's speech service isn't available (${reason}). Try Chrome or Edge, or type your answer.`);
+  return false;
+}
+
+function startBrowserDictation() {
   const rec = new SpeechRec();
+  let started = false;
   rec.lang = "en-IN";
   rec.continuous = true;
   rec.interimResults = true;
@@ -356,14 +481,125 @@ function toggleMic() {
     box.value = base + text.trim();
     box.dispatchEvent(new Event("input"));
   };
-  rec.onend = () => { voice.listening = false; $("#iv-mic").classList.remove("recording"); $("#iv-mic span").textContent = "Dictate"; };
-  rec.onerror = (e) => { if (e.error !== "no-speech" && e.error !== "aborted") toast("Microphone: " + e.error); };
+  rec.onstart = () => { started = true; };
+  rec.onerror = (e) => {
+    if (e.error === "no-speech" || e.error === "aborted") return;
+    if (e.error === "not-allowed") { toast("Microphone access is blocked. Allow it from the icon in the address bar."); return; }
+    // "network" and friends: the browser has no working speech service (common in Brave and Opera).
+    if (browserSpeechFailed(e.error)) voice.fallbackPending = true;
+  };
+  rec.onend = () => {
+    voice.listening = false;
+    setMicUi(false);
+    if (voice.fallbackPending) {
+      voice.fallbackPending = false;
+      toast("Recording instead: speak your answer, then press Stop and it will be transcribed.");
+      startRecording();
+    }
+  };
   voice.rec = rec;
-  window.speechSynthesis && window.speechSynthesis.cancel();
+  voice.mode = "browser";
   rec.start();
   voice.listening = true;
-  $("#iv-mic").classList.add("recording");
-  $("#iv-mic span").textContent = "Stop dictation";
+  setMicUi(true, "Stop dictation");
+  // Some browsers accept start() but never begin listening and report nothing; don't wait forever.
+  setTimeout(() => {
+    if (started || voice.rec !== rec || !voice.listening) return;
+    rec.onend = null;
+    try { rec.abort(); } catch (_) { /* already stopped */ }
+    voice.listening = false;
+    setMicUi(false);
+    if (browserSpeechFailed("no response")) {
+      toast("Recording instead: speak your answer, then press Stop and it will be transcribed.");
+      startRecording();
+    }
+  }, 4000);
+}
+
+async function startRecording() {
+  if (!navigator.mediaDevices || !window.MediaRecorder) { toast("Recording isn't supported in this browser."); return; }
+  try {
+    voice.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch (_) {
+    toast("Microphone access is blocked. Allow it from the icon in the address bar.");
+    return;
+  }
+  const type = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg;codecs=opus"].find((t) => MediaRecorder.isTypeSupported(t));
+  voice.recorder = new MediaRecorder(voice.stream, type ? { mimeType: type } : undefined);
+  voice.chunks = [];
+  voice.recorder.ondataavailable = (e) => { if (e.data.size) voice.chunks.push(e.data); };
+  voice.recorder.onstop = finishRecording;
+  voice.recorder.start();
+  voice.mode = "record";
+  voice.listening = true;
+  setMicUi(true, "Stop recording");
+  voice.autoStop = setTimeout(stopDictation, 5 * 60 * 1000);
+}
+
+function stopDictation() {
+  clearTimeout(voice.autoStop);
+  if (!voice.listening) return;
+  if (voice.mode === "browser" && voice.rec) voice.rec.stop();
+  if (voice.mode === "record" && voice.recorder && voice.recorder.state !== "inactive") voice.recorder.stop();
+}
+
+async function finishRecording() {
+  voice.listening = false;
+  if (voice.stream) voice.stream.getTracks().forEach((t) => t.stop());
+  const btn = $("#iv-mic");
+  btn.disabled = true;
+  setMicUi(false, "Transcribing…");
+  try {
+    const pcm = await toMono16k(new Blob(voice.chunks, { type: voice.recorder.mimeType }));
+    const parts = [];
+    const step = 16000 * 50; // 50-second pieces stay well under the upload limit
+    for (let i = 0; i < pcm.length; i += step) {
+      const fd = new FormData();
+      fd.append("file", new Blob([encodeWav(pcm.subarray(i, i + step), 16000)], { type: "audio/wav" }), "answer.wav");
+      const r = await api("/api/transcribe", { method: "POST", body: fd });
+      if (r.text) parts.push(r.text);
+    }
+    if (parts.length) {
+      const box = $("#iv-answer");
+      box.value = (box.value ? box.value.trimEnd() + " " : "") + parts.join(" ");
+      box.dispatchEvent(new Event("input"));
+    } else {
+      toast("No speech was detected. Try again a little closer to the microphone.");
+    }
+  } catch (e) {
+    toast("Transcription failed: " + e.message);
+  } finally {
+    btn.disabled = false;
+    setMicUi(false);
+  }
+}
+
+async function toMono16k(blob) {
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  const ctx = new Ctx();
+  const decoded = await ctx.decodeAudioData(await blob.arrayBuffer());
+  ctx.close();
+  const off = new OfflineAudioContext(1, Math.max(1, Math.ceil(decoded.duration * 16000)), 16000);
+  const src = off.createBufferSource();
+  src.buffer = decoded;
+  src.connect(off.destination);
+  src.start();
+  return (await off.startRendering()).getChannelData(0);
+}
+
+function encodeWav(samples, rate) {
+  const buffer = new ArrayBuffer(44 + samples.length * 2);
+  const view = new DataView(buffer);
+  const text = (offset, str) => { for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i)); };
+  text(0, "RIFF"); view.setUint32(4, 36 + samples.length * 2, true); text(8, "WAVE");
+  text(12, "fmt "); view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
+  view.setUint32(24, rate, true); view.setUint32(28, rate * 2, true); view.setUint16(32, 2, true); view.setUint16(34, 16, true);
+  text(36, "data"); view.setUint32(40, samples.length * 2, true);
+  for (let i = 0; i < samples.length; i++) {
+    const v = Math.max(-1, Math.min(1, samples[i]));
+    view.setInt16(44 + i * 2, v < 0 ? v * 0x8000 : v * 0x7fff, true);
+  }
+  return buffer;
 }
 
 function startTimer() {
@@ -498,12 +734,12 @@ function askQuestion(q) {
   state.interview.current = q;
   $("#iv-progress").style.width = `${(q.index / q.total) * 100}%`;
   $("#iv-thread").insertAdjacentHTML("beforeend", `
-    <div class="bubble q"><span class="tag">Question ${q.number} of ${q.total} · ${esc(q.category)}${q.skill ? " · " + esc(q.skill) : ""}</span><p>${esc(q.text)}</p></div>`);
+    <div class="bubble q"><span class="tag">Question ${q.number} of ${q.total} · ${esc(q.category)}${q.skill ? " · " + esc(q.skill) : ""}</span><p class="lead-in">${esc(leadIn(q))}</p><p>${esc(q.text)}</p></div>`);
   $("#iv-answer").value = "";
   $("#iv-words").textContent = "0 words";
   $("#iv-answer-box").hidden = false;
   startTimer();
-  speak(q.text);
+  speak(`${leadIn(q)} ${q.text}`);
   $("#iv-answer").focus({ preventScroll: true });
   $("#iv-answer-box").scrollIntoView({ behavior: "smooth", block: "end" });
 }
@@ -522,8 +758,10 @@ function feedbackHtml(ev) {
 
 async function submitAnswer(skip = false) {
   const answer = skip ? "" : $("#iv-answer").value.trim();
+  if (voice.listening && voice.mode === "record") { toast("Press Stop recording first so your answer can be transcribed."); return; }
   if (!skip && !answer) { toast("Type an answer or press Skip"); return; }
-  stopListening();
+  stopDictation();
+  stopSpeaking();
   const btn = $("#iv-submit");
   if (btn.disabled) return;
   const seconds = elapsedSeconds();
@@ -681,11 +919,10 @@ function bind() {
   $("#jd-btn").addEventListener("click", runJobMatch);
   $("#iv-tts").checked = loadJSON("tts", false);
   $("#iv-tts").addEventListener("change", (e) => saveJSON("tts", e.target.checked));
-  if (SpeechRec) {
-    $("#iv-mic").hidden = false;
-    $("#iv-voice-hint").textContent = "Use Dictate to answer out loud, as you would in a real interview.";
-  } else {
-    $("#iv-voice-hint").textContent = "Voice answers need Chrome or Edge.";
+  $("#iv-voice").addEventListener("change", (e) => saveJSON("voice", e.target.value));
+  $("#iv-voice-preview").addEventListener("click", () => speak(SAMPLE_LINE, true));
+  if ("speechSynthesis" in window) {
+    window.speechSynthesis.onvoiceschanged = () => { if (state.meta && !state.ai.speech) fillVoiceOptions(); };
   }
   $("#iv-answer").addEventListener("input", (e) => {
     const n = e.target.value.trim() ? e.target.value.trim().split(/\s+/).length : 0;
@@ -715,6 +952,11 @@ async function init() {
     badge.className = `badge ${health.ai.provider ? "ai" : "muted"}`;
     $("#jd-ai-wrap").hidden = !health.ai.provider;
     $("#jd-source").textContent = health.ai.provider ? "" : "Add a Gemini API key to get tailoring suggestions.";
+    fillVoiceOptions();
+    $("#iv-mic").hidden = !micAvailable();
+    $("#iv-voice-hint").textContent = micAvailable()
+      ? "Use Dictate to answer out loud, as you would in a real interview."
+      : "Spoken answers need Chrome or Edge (or a Gemini key on the server).";
     renderHistory();
   } catch (e) {
     toast("Could not reach the server: " + e.message);

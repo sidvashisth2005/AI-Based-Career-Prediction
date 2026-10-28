@@ -1,4 +1,6 @@
-# AI-Based Career Prediction
+<p align="center"><img src="public/favicon.svg" width="76" alt="Career Compass logo"></p>
+
+# AI-Based Career Prediction (Career Compass)
 
 A web app that reads your resume and helps you choose and prepare for a career.
 
@@ -14,7 +16,7 @@ A web app that reads your resume and helps you choose and prepare for a career.
 5. **Job description match (ATS check).** Paste any job posting to get an ATS-style match score, the skills and keywords from the job that your resume is missing, warnings about experience or degree requirements, and a guess at which career the job belongs to. With an AI key you also get a tailored resume summary and rewritten bullet points.
 6. **Resume health score.** Every uploaded resume is scored out of 100 on ATS and recruiter best practices: contact details, sections, action verbs, quantified impact, length and weak phrases. Each failed check comes with a specific tip.
 7. **"What if I learn…?" simulator.** On the skill-gap page, tick the skills you plan to learn and instantly see how your readiness, your rank for that career and your top career matches would change, and how long it would take.
-8. **Voice interview mode.** Answer by speaking (🎤, in Chrome or Edge) and optionally have questions read aloud. A timer shows how long each answer takes.
+8. **Voice interview mode.** The interviewer reads each question aloud in a natural human voice (Gemini text-to-speech, with a choice of voices), with short spoken transitions like a real interviewer ("Thanks. Next one."). Answer by speaking with **Dictate**: Chrome and Edge transcribe as you talk; in browsers whose speech service doesn't work (Brave, Opera, Vivaldi, Firefox) the app records your answer and Gemini transcribes it. A timer shows how long each answer takes. Without a Gemini key, the browser's most natural voice is used.
 9. **Progress tracking and PDF export.** Your interview scores are saved in your browser and shown as a trend. Gap reports, job-match reports and interview reports can be saved as PDF.
 
 It runs fully offline. If you add a **Gemini API key** (or an Anthropic key), the AI writes personalised interview questions from your resume, grades answers against a rubric and tailors your resume to job descriptions.
@@ -134,6 +136,8 @@ Interactive docs are at http://localhost:8000/docs.
 | POST | `/api/interview/{id}/answer` | `{answer}` → evaluation and next question |
 | GET | `/api/interview/{id}/report` | Final interview report |
 | POST | `/api/jobmatch` | `{job_description, resume_text, skills, use_ai}` → ATS match, gaps and AI tailoring |
+| POST | `/api/speak` | `{text, voice}` → WAV audio of the interviewer's voice (Gemini) |
+| POST | `/api/transcribe` | multipart `file` (WAV) → `{text}`; dictation fallback (Gemini) |
 | POST | `/api/whatif` | `{career_id, skills, add_skills}` → readiness and ranking before and after learning |
 
 Example:
@@ -159,7 +163,9 @@ The tests cover the knowledge base, skill extraction and its false-positive case
 | Variable | Default | Meaning |
 |---|---|---|
 | `GEMINI_API_KEY` | placeholder | Turns on the AI interviewer and resume tailoring with Gemini |
-| `GEMINI_MODEL` | `gemini-flash-latest` | Gemini model |
+| `GEMINI_MODEL` | `gemini-flash-latest` | Gemini model for questions, grading, tailoring and transcription |
+| `GEMINI_TTS_MODEL` | `gemini-3.1-flash-tts-preview` | Gemini text-to-speech model for the interviewer's voice (falls back to `gemini-2.5-flash-preview-tts`, then to the browser's voice) |
+| `GEMINI_TTS_VOICE` | `Sulafat` | Default interviewer voice; users can pick another in the interview settings |
 | `ANTHROPIC_API_KEY` | placeholder | Alternative provider: Claude |
 | `CLAUDE_MODEL` | `claude-opus-5-5` | Claude model |
 | `CLAUDE_EFFORT` | `medium` | `low`, `medium` or `high` |
@@ -174,7 +180,7 @@ The tests cover the knowledge base, skill extraction and its false-positive case
 - Scanned (image-only) PDFs are not supported because there is no OCR. Use a text-based PDF, a DOCX file, or paste the text.
 - Interview state is kept in the browser and sent with each answer, which is what lets it run on serverless hosts. A user could edit their own interview state, but that only affects their own practice scores.
 - Without an AI key, answers are scored by key-point coverage and structure. This is useful for practice but it cannot judge correctness the way a human or an LLM can.
-- Voice answers use the browser's built-in speech recognition, which works in Chrome and Edge but not Firefox. In Chrome the audio is processed by Google's speech service.
+- Live dictation uses the browser's speech recognition (Chrome sends audio to Google, Edge to Microsoft). Where that isn't available, recorded answers are sent to Gemini for transcription, which needs a Gemini key on the server.
 - The job-match score is an approximation of how ATS software ranks resumes; real ATS products differ from each other.
 
 ## Project structure

@@ -9,11 +9,22 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" href="/favicon.ico" sizes="48x48">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#14212e">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M15.8 8.2l-2.3 5.3-5.3 2.3 2.3-5.3z" fill="currentColor"/></svg>
+      <svg class="logo" viewBox="0 0 64 64" aria-hidden="true">
+        <rect width="64" height="64" rx="14" fill="#1f4e79"/>
+        <path d="M49.73 28.87 A18 18 0 1 1 35.13 14.27" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+        <path d="M50.4 13.6 L34.97 34.97 L29.03 29.03 Z" fill="#fff"/>
+        <path d="M22.1 41.9 L29.03 29.03 L34.97 34.97 Z" fill="#8fb4dc"/>
+        <circle cx="32" cy="32" r="2.6" fill="#1f4e79"/>
+      </svg>
       <span>Career Compass</span>
     </div>
     <nav class="steps" role="tablist">
@@ -116,8 +127,12 @@
         </div>
         <div class="row wrap options">
           <label class="check"><input type="checkbox" id="iv-tts"> Read questions aloud</label>
-          <span class="hint" id="iv-voice-hint"></span>
+          <label class="field inline voice-field">Interviewer voice
+            <select id="iv-voice" aria-label="Interviewer voice"></select>
+          </label>
+          <button type="button" class="btn ghost small" id="iv-voice-preview">Preview voice</button>
         </div>
+        <p class="hint" id="iv-voice-hint"></p>
         <button id="iv-start" class="btn primary">Start interview</button>
         <span id="iv-msg" class="msg"></span>
         <div id="iv-history"></div>

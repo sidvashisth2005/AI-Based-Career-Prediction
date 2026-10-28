@@ -96,3 +96,8 @@ class JobMatchIn(BaseModel):
     skills: list[str] = Field(default_factory=list, max_length=200)
     experience_years: float = Field(0.0, ge=0, le=50)
     use_ai: bool = True
+
+
+class SpeakIn(BaseModel):
+    text: str = Field(..., min_length=1, max_length=1500)
+    voice: str | None = Field(None, max_length=40)

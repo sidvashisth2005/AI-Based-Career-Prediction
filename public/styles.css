@@ -83,7 +83,7 @@ small { font-size: .82rem; }
   color: var(--header-text);
 }
 .brand { display: flex; align-items: center; gap: .55rem; font-weight: 600; color: var(--header-active); letter-spacing: .01em; padding: .8rem 0; }
-.brand svg { width: 22px; height: 22px; color: var(--header-accent); }
+.brand svg.logo { width: 26px; height: 26px; border-radius: 6px; box-shadow: 0 0 0 1px rgba(255, 255, 255, .12); }
 .steps { display: flex; gap: .25rem; flex: 1; overflow-x: auto; }
 .step {
   border: 0; background: transparent; color: var(--header-text); font: inherit; font-size: .9rem;
@@ -128,7 +128,9 @@ textarea { resize: vertical; line-height: 1.5; }
 input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary); outline-offset: -1px; border-color: var(--primary); }
 .check { display: inline-flex; align-items: center; gap: .45rem; font-size: .9rem; cursor: pointer; }
 .check input { width: auto; accent-color: var(--primary); }
-.options { margin: 0 0 1rem; align-items: center; }
+.options { margin: 0 0 .5rem; align-items: center; gap: 1rem; }
+.voice-field { flex: 0 1 auto !important; flex-direction: row !important; align-items: center; gap: .5rem; min-width: 0; }
+.voice-field select { width: auto; min-width: 190px; }
 
 .btn {
   font: inherit; font-size: .9rem; font-weight: 500; border-radius: var(--radius-sm); padding: .55rem 1rem; cursor: pointer;
@@ -282,6 +284,7 @@ ul.plain li + li { margin-top: .2rem; }
 .bubble.a { background: var(--surface-2); align-self: flex-end; max-width: 85%; white-space: pre-wrap; }
 .bubble .tag { font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600; }
 .bubble p { margin: .3rem 0 0; }
+.bubble .lead-in { color: var(--muted); font-style: italic; }
 .feedback { border-left: 3px solid var(--good); }
 .feedback.mid { border-left-color: var(--warn); }
 .feedback.low { border-left-color: var(--bad); }

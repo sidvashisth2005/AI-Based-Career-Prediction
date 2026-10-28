@@ -158,8 +158,23 @@ def run(base: str) -> bool:
         notes = f"; notice: {s['notices'][0][:60]}" if s["notices"] else ""
         return f"mode {s['mode']}, {s['total']} questions, score {rep['overall_score']}/10{notes}"
 
+    def voice():
+        status, raw, ctype = c.request("POST", "/api/speak", {"text": "Hi, thanks for joining today."})
+        if not ctx.get("ai"):
+            assert status == 503, f"expected 503 without Gemini, got {status}"
+            return "offline: browser voice and browser dictation are used"
+        assert status == 200 and "audio" in ctype and raw[:4] == b"RIFF", f"speak: status {status} {raw[:150]!r}"
+        import io, wave
+        with wave.open(io.BytesIO(raw)) as w:
+            seconds = w.getnframes() / w.getframerate()
+        body, headers = multipart("file", "answer.wav", raw, "audio/wav")
+        status, t = c.json("POST", "/api/transcribe", body, headers)
+        assert status == 200, f"transcribe: status {status}: {t}"
+        return f"natural voice {seconds:.1f}s; transcribed back: {t['text'][:50]!r}"
+
     def ui():
-        for path, marker in (("/", b"Career Compass"), ("/app.js", b"postJSON"), ("/styles.css", b"--primary")):
+        for path, marker in (("/", b"Career Compass"), ("/app.js", b"postJSON"), ("/styles.css", b"--primary"),
+                             ("/favicon.svg", b"<svg"), ("/site.webmanifest", b"Career Compass")):
             status, raw, _ = c.request("GET", path)
             assert status == 200 and marker in raw, f"{path}: status {status}"
         status, raw, _ = c.request("GET", "/docs")
@@ -186,7 +201,8 @@ def run(base: str) -> bool:
         c.check("What-if simulator", whatif)
         c.check("Job match (ATS)", jobmatch)
         c.check("Mock interview (full)", interview)
-    c.check("Web UI and API docs", ui)
+    c.check("Interviewer voice + dictation", voice)
+    c.check("Web UI, logo and API docs", ui)
     c.check("Input validation", errors)
 
     failed = [r for r in c.results if not r[1]]
